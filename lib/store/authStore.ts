@@ -24,12 +24,14 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
       favorites: [],
-      setUser: (user) =>
+      setUser: (user) => {
+        console.log('✅ Setting user in auth store:', user);
         set({
           user,
           isAuthenticated: !!user,
           isLoading: false,
-        }),
+        });
+      },
       setLoading: (loading) => set({ isLoading: loading }),
       logout: () =>
         set({
