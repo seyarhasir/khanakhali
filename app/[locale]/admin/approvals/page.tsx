@@ -132,8 +132,8 @@ export default function ApprovalsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-brand-slate mb-2">Pending Approvals</h1>
-        <p className="text-brand-gray">Review and approve agent actions</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-brand-slate mb-2">{t('admin.pendingApprovals')}</h1>
+        <p className="text-brand-gray">{t('admin.reviewAgentActions')}</p>
       </div>
 
       {/* Pending New Listings & Edits */}
@@ -141,7 +141,7 @@ export default function ApprovalsPage() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-brand-slate mb-6 flex items-center gap-2">
             <Edit3 className="w-6 h-6 text-blue-600" />
-            New Listings & Edits ({pendingListings.length})
+            {t('admin.newListingsEdits')} ({pendingListings.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {pendingListings.map((listing) => (
@@ -149,7 +149,7 @@ export default function ApprovalsPage() {
                 <div className="bg-yellow-50 p-3 border-b border-yellow-200 flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-yellow-600" />
                   <span className="font-semibold text-yellow-800">
-                    {listing.originalData ? 'Edit Pending' : 'New Listing Pending'}
+                    {listing.originalData ? t('admin.editPending') : t('admin.newListingPending')}
                   </span>
                 </div>
                 <div className="p-4">
@@ -179,7 +179,7 @@ export default function ApprovalsPage() {
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                     >
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Approve
+                      {t('admin.approve')}
                     </Button>
                     <Button
                       onClick={() => listing.originalData ? handleRejectEdit(listing.id) : handleRejectNew(listing.id)}
@@ -187,7 +187,7 @@ export default function ApprovalsPage() {
                       className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
                     >
                       <XCircle className="w-4 h-4 mr-2" />
-                      Reject
+                      {t('admin.reject')}
                     </Button>
                   </div>
                 </div>
@@ -202,14 +202,14 @@ export default function ApprovalsPage() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-brand-slate mb-6 flex items-center gap-2">
             <Trash2 className="w-6 h-6 text-red-600" />
-            Delete Requests ({pendingDeletes.length})
+            {t('admin.deleteRequests')} ({pendingDeletes.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {pendingDeletes.map((listing) => (
               <div key={listing.id} className="bg-white rounded-xl shadow-lg border-2 border-red-300 overflow-hidden">
                 <div className="bg-red-50 p-3 border-b border-red-200 flex items-center gap-2">
                   <Trash2 className="w-5 h-5 text-red-600" />
-                  <span className="font-semibold text-red-800">Delete Request</span>
+                  <span className="font-semibold text-red-800">{t('admin.deleteRequest')}</span>
                 </div>
                 <div className="p-4">
                   {listing.imageUrls && listing.imageUrls.length > 0 && (
@@ -238,7 +238,7 @@ export default function ApprovalsPage() {
                       className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                     >
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Approve Delete
+                      {t('admin.approveDelete')}
                     </Button>
                     <Button
                       onClick={() => handleRejectDelete(listing.id)}
@@ -246,7 +246,7 @@ export default function ApprovalsPage() {
                       className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                     >
                       <XCircle className="w-4 h-4 mr-2" />
-                      Keep Listing
+                      {t('admin.keepListing')}
                     </Button>
                   </div>
                 </div>
@@ -262,8 +262,8 @@ export default function ApprovalsPage() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
-          <h3 className="text-2xl font-bold text-brand-slate mb-3">All Caught Up!</h3>
-          <p className="text-brand-gray text-lg">No pending approvals at the moment</p>
+          <h3 className="text-2xl font-bold text-brand-slate mb-3">{t('admin.allCaughtUp')}</h3>
+          <p className="text-brand-gray text-lg">{t('admin.noPendingApprovals')}</p>
         </div>
       )}
     </div>
