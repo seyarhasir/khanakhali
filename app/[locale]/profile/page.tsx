@@ -312,15 +312,15 @@ export default function ProfilePage() {
                   <Button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="bg-white text-brand-navy hover:bg-gray-50 font-semibold shadow-lg disabled:opacity-50"
+                    className="bg-green-600 text-white hover:bg-green-700 font-semibold shadow-lg disabled:opacity-50 border-2 border-white"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     {isSaving ? t('common.loading') : t('profile.save')}
                   </Button>
                   <Button
                     onClick={handleCancel}
-                    variant="outline"
-                    className="border-2 border-white/80 bg-white/20 text-white hover:bg-white/30 hover:border-white backdrop-blur-sm"
+                    disabled={isSaving}
+                    className="bg-red-600 text-white hover:bg-red-700 font-semibold shadow-lg border-2 border-white"
                   >
                     <X className="w-4 h-4 mr-2" />
                     {t('profile.cancel')}
@@ -329,7 +329,7 @@ export default function ProfilePage() {
               ) : (
                 <Button
                   onClick={() => setIsEditing(true)}
-                  className="bg-white text-brand-navy hover:bg-gray-50 font-semibold shadow-lg"
+                  className="bg-brand-secondary text-brand-slate hover:bg-yellow-500 font-semibold shadow-lg border-2 border-white"
                 >
                   <Edit2 className="w-4 h-4 mr-2" />
                   {t('profile.edit')}
