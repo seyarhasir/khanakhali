@@ -229,7 +229,7 @@ export default function ProfilePage() {
     );
   }
 
-  const isAgent = user.role === 'admin';
+  const isAgent = user.role === 'admin' || user.role === 'agent';
   const favoriteListings: Listing[] = []; // Would need to fetch favorite listings
 
   return (
@@ -278,8 +278,14 @@ export default function ProfilePage() {
               )}
               <p className="text-white/90 mb-4">{user.email}</p>
               <div className="flex items-center justify-center md:justify-start gap-4 flex-wrap">
-                <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
-                  {isAgent ? t('profile.agent') : t('profile.user')}
+                <span className={`inline-block px-4 py-2 backdrop-blur-sm rounded-full text-sm font-semibold ${
+                  user.role === 'admin' ? 'bg-brand-primary/40' : 
+                  user.role === 'agent' ? 'bg-yellow-600/40' : 
+                  'bg-white/20'
+                }`}>
+                  {user.role === 'admin' ? t('profile.admin') : 
+                   user.role === 'agent' ? 'Agent' : 
+                   t('profile.user')}
                 </span>
                 {isAgent && user.company && (
                   <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm">
