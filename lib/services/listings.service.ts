@@ -376,6 +376,7 @@ export const listingsService = {
       if (userRole === 'agent') {
         await updateDoc(docRef, {
           pendingDelete: true,
+          pendingApproval: false, // Clear pending approval if it exists
           updatedAt: serverTimestamp(),
         });
         console.log('✅ Listing delete pending approval:', id);

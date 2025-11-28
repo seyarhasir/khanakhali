@@ -157,8 +157,15 @@ export default function AdminPage() {
                       if (confirmed) {
                         try {
                           await listingsService.deleteListing(listing.id, user?.role || 'user');
+                          // Remove from local state immediately
                           setListings(listings.filter((l) => l.id !== listing.id));
-                          toast.success('Listing deleted successfully');
+                          
+                          // Show appropriate message based on role
+                          if (user?.role === 'agent') {
+                            toast.success('Delete request submitted! Waiting for admin approval.');
+                          } else {
+                            toast.success('Listing deleted successfully');
+                          }
                         } catch (error) {
                           console.error('Error deleting listing:', error);
                           toast.error('Failed to delete listing');
