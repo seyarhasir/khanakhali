@@ -152,7 +152,13 @@
     "hot": "HOT",
     "verified": "Verified",
     "premium": "Premium",
-    "added": "Added"
+    "added": "Added",
+    "justNow": "Just now",
+    "minutesAgo": "{count} {count, plural, one {minute} other {minutes}} ago",
+    "hoursAgo": "{count} {count, plural, one {hour} other {hours}} ago",
+    "daysAgo": "{count} {count, plural, one {day} other {days}} ago",
+    "monthsAgo": "{count} {count, plural, one {month} other {months}} ago",
+    "yearsAgo": "{count} {count, plural, one {year} other {years}} ago"
   },
   "projects": {
     "back": "Back",

@@ -27,8 +27,8 @@ interface ListingCardProps {
   listing: Listing;
 }
 
-// Helper function to calculate time ago
-const getTimeAgo = (date: Date | string | any): string => {
+// Helper function to calculate time ago (with translations)
+const getTimeAgo = (date: Date | string | any, t: (key: string, params?: any) => string): string => {
   // Handle different date formats
   let dateObj: Date;
   
@@ -56,28 +56,28 @@ const getTimeAgo = (date: Date | string | any): string => {
   
   // Handle future dates
   if (diffInSeconds < 0) {
-    return 'Just now';
+    return t('listings.justNow');
   }
   
-  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 60) return t('listings.justNow');
   if (diffInSeconds < 3600) {
     const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    return t('listings.minutesAgo', { count: minutes });
   }
   if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    return t('listings.hoursAgo', { count: hours });
   }
   if (diffInSeconds < 2592000) {
     const days = Math.floor(diffInSeconds / 86400);
-    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    return t('listings.daysAgo', { count: days });
   }
   if (diffInSeconds < 31536000) {
     const months = Math.floor(diffInSeconds / 2592000);
-    return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+    return t('listings.monthsAgo', { count: months });
   }
   const years = Math.floor(diffInSeconds / 31536000);
-  return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+  return t('listings.yearsAgo', { count: years });
 };
 
 export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
@@ -136,7 +136,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
     }
   }
   
-  const timeAgo = createdAtDate ? getTimeAgo(createdAtDate) : '';
+  const timeAgo = createdAtDate ? getTimeAgo(createdAtDate, t) : '';
 
   // Use badges from listing data (manually selected)
     const badges = {
