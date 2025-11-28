@@ -18,7 +18,7 @@ export default function AdminUsersPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const toast = useToast();
-  const confirm = useConfirm();
+  const { confirm } = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
