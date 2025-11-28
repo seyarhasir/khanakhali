@@ -291,7 +291,7 @@ export default function EditListingPage() {
                           <button
                             type="button"
                             onClick={() => setExistingAsCover(index)}
-                            className="absolute bottom-1 left-1 sm:bottom-2 sm:left-2 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-[10px] sm:text-xs font-semibold opacity-75 sm:opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            className="absolute bottom-1 left-1 sm:bottom-2 sm:left-2 bg-blue-500 hover:bg-brand-secondary text-white px-2 py-1 rounded text-[10px] sm:text-xs font-semibold opacity-75 sm:opacity-0 group-hover:opacity-100 transition-opacity z-10"
                           >
                             {t('admin.setAsCover')}
                           </button>

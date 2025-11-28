@@ -356,7 +356,7 @@ export default function ProjectDetailPage() {
               {project.contactPhone && (
                 <a
                   href={`tel:${project.contactPhone}`}
-                  className="flex items-center gap-3 p-3 bg-blue-50 hover:bg-blue-100 rounded-lg mb-3 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-brand-secondary-soft hover:bg-brand-secondary rounded-lg mb-3 transition-colors"
                 >
                   <Phone className="w-5 h-5 text-blue-600" />
                   <span className="text-blue-600 font-medium">{project.contactPhone}</span>

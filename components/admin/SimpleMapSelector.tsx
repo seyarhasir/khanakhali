@@ -110,7 +110,7 @@ export const SimpleMapSelector: React.FC<SimpleMapSelectorProps> = ({
       <button
         type="button"
         onClick={openGoogleMaps}
-        className="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 flex items-center justify-center gap-2 text-blue-700 transition-colors"
+        className="w-full bg-brand-secondary-soft hover:bg-brand-secondary border border-brand-secondary rounded-lg p-4 flex items-center justify-center gap-2 text-brand-slate transition-colors"
       >
         <MapPin className="w-5 h-5" />
         <span className="font-medium">{t('admin.openFullMap')}</span>
