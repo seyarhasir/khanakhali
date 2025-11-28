@@ -23,6 +23,7 @@
   "nav": {
     "adminLogin": "ورود مدیر",
     "dashboard": "داشبورد",
+    "agentDashboard": "داشبورد نماینده",
     "savedHomes": "خانه‌های ذخیره شده",
     "profile": "پروفایل"
   },
