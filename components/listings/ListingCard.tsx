@@ -110,7 +110,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
     : listing.location?.city || listing.location?.state || t('listings.location');
   
   const favorited = isFavorite(listing.id);
-  // Ensure createdAt is a Date object
+  // Ensure createdAt is a Date object - only show if it actually exists
   let createdAtDate: Date | null = null;
   
   if (listing.createdAt) {
@@ -133,18 +133,13 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
       }
     }
     
-    // Validate the date
+    // Validate the date - if invalid, set to null (don't show anything)
     if (createdAtDate && isNaN(createdAtDate.getTime())) {
       createdAtDate = null;
     }
   }
   
-  // If createdAt is null but listing exists, use current time as fallback (for very new listings)
-  // This handles cases where Firestore hasn't committed the timestamp yet
-  if (!createdAtDate && listing.id) {
-    createdAtDate = new Date(); // Fallback to now for very new listings
-  }
-  
+  // Only calculate timeAgo if we have a valid createdAt date
   const timeAgo = createdAtDate ? getTimeAgo(createdAtDate, t) : '';
 
   // Use badges from listing data (manually selected)
@@ -335,10 +330,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
               )}
             </div>
 
-            {/* Time Ago */}
-            <div className="text-[10px] text-gray-500 mb-1.5">
-              {t('listings.added')}: {timeAgo || t('listings.justNow')}
-            </div>
+            {/* Time Ago - Only show if createdAt exists */}
+            {timeAgo && (
+              <div className="text-[10px] text-gray-500 mb-1.5">
+                {t('listings.added')}: {timeAgo}
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5 mt-auto pt-1.5">
@@ -491,10 +488,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
             {listing.title}
           </h3>
 
-          {/* Time Ago */}
-          <div className="text-xs text-gray-500 mb-2">
-            {t('listings.added')}: {timeAgo || t('listings.justNow')}
-          </div>
+          {/* Time Ago - Only show if createdAt exists */}
+          {timeAgo && (
+            <div className="text-xs text-gray-500 mb-2">
+              {t('listings.added')}: {timeAgo}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 pt-2 border-t border-gray-100">

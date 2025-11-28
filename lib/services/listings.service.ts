@@ -57,13 +57,14 @@ const convertTimestamp = (timestamp: any): Date | null => {
 };
 
 // Remove undefined values from object recursively (Firestore doesn't accept undefined)
+// CRITICAL: Preserve serverTimestamp() objects (they have a special structure)
 const removeUndefined = (obj: any): any => {
   if (obj === null || obj === undefined) {
     return null;
   }
   
-  // Don't process Date objects or Firestore Timestamps
-  if (obj instanceof Date || obj?.toDate || obj?.seconds) {
+  // Don't process Date objects or Firestore Timestamps or serverTimestamp() objects
+  if (obj instanceof Date || obj?.toDate || obj?.seconds || obj?._methodName === 'serverTimestamp') {
     return obj;
   }
   
@@ -77,8 +78,12 @@ const removeUndefined = (obj: any): any => {
       if (obj.hasOwnProperty(key)) {
         const value = obj[key];
         if (value !== undefined) {
+          // Preserve serverTimestamp() objects
+          if (value?._methodName === 'serverTimestamp') {
+            cleaned[key] = value;
+          }
           // Recursively clean nested objects
-          if (value !== null && typeof value === 'object' && !(value instanceof Date) && !value?.toDate && !value?.seconds) {
+          else if (value !== null && typeof value === 'object' && !(value instanceof Date) && !value?.toDate && !value?.seconds) {
             const cleanedValue = removeUndefined(value);
             // Only add if the cleaned object is not empty
             if (cleanedValue !== null && (Array.isArray(cleanedValue) || Object.keys(cleanedValue).length > 0)) {
@@ -340,6 +345,7 @@ export const listingsService = {
         pendingApproval: cleanedData.pendingApproval,
         pendingApprovalType: typeof cleanedData.pendingApproval,
         createdBy: cleanedData.createdBy,
+        hasCreatedAt: !!cleanedData.createdAt,
         hasUpdatedAt: !!cleanedData.updatedAt,
       });
       
