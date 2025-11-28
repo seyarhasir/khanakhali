@@ -70,7 +70,7 @@ service cloud.firestore {
                        (!isAgent() && 
                         request.resource.data.status in ['active', 'sold', 'pending', 'rented', 'pledged']));
       
-      // CRITICAL: Admin and agent can update, but agents CANNOT change status to 'active' or remove pendingApproval
+      // CRITICAL: Admin and agent can update, but agents have strict restrictions
       allow update: if isAdminOrAgent() &&
                       resource.data.createdBy == request.auth.uid &&
                       // If agent is updating, enforce restrictions
@@ -81,8 +81,9 @@ service cloud.firestore {
                        // Agent cannot remove pendingApproval (must be true)
                        request.resource.data.pendingApproval == true);
       
-      // Admin and agent who created the listing can delete it (or mark for deletion)
-      allow delete: if isAdminOrAgent() &&
+      // CRITICAL: Only admins can actually delete. Agents must use update to set pendingDelete=true
+      // This prevents agents from bypassing the approval system
+      allow delete: if isAdmin() &&
                       resource.data.createdBy == request.auth.uid;
     }
     
