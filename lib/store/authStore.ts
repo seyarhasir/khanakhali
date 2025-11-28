@@ -33,13 +33,22 @@ export const useAuthStore = create<AuthState>()(
         });
       },
       setLoading: (loading) => set({ isLoading: loading }),
-      logout: () =>
+      logout: async () => {
+        // Clear Firebase auth
+        try {
+          const { authService } = await import('../services/auth.service');
+          await authService.signOut();
+        } catch (error) {
+          console.error('Error signing out from Firebase:', error);
+        }
+        // Clear Zustand store
         set({
           user: null,
           isAuthenticated: false,
           isLoading: false,
           favorites: [],
-        }),
+        });
+      },
       toggleFavorite: (listingId: string) => {
         const { favorites, isAuthenticated } = get();
         if (!isAuthenticated) {
@@ -60,17 +69,24 @@ export const useAuthStore = create<AuthState>()(
           const { authService } = await import('../services/auth.service');
           const freshUser = await authService.refreshUserData();
           if (freshUser) {
-            set({ user: freshUser });
+            set({ user: freshUser, isAuthenticated: true });
             console.log('✅ User data refreshed successfully');
+          } else {
+            // If no user, clear state
+            set({ user: null, isAuthenticated: false });
           }
         } catch (error) {
           console.error('❌ Failed to refresh user:', error);
+          set({ user: null, isAuthenticated: false });
         }
       },
     }),
     {
       name: 'auth-storage',
+      // Only persist favorites - user state comes from Firebase Auth
       partialize: (state) => ({ favorites: state.favorites }),
+      // Don't rehydrate user state - let Firebase Auth handle it
+      skipHydration: false,
     }
   )
 );
