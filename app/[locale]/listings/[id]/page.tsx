@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import { listingsService } from '@/lib/services/listings.service';
