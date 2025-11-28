@@ -18,6 +18,7 @@ export default function NewProjectPage() {
   const locale = useLocale();
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const toast = useToast();
 
   useEffect(() => {
     if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
@@ -137,9 +138,10 @@ export default function NewProjectPage() {
         await projectsService.updateProject(project.id, { id: project.id }, imageUrls);
       }
       
+      toast.success('Project created successfully!');
       router.push(`/${locale}/admin`);
     } catch (error: any) {
-      alert(error.message || 'Failed to create project');
+      toast.error(error.message || 'Failed to create project');
     } finally {
       setIsLoading(false);
     }

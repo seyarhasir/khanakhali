@@ -20,6 +20,7 @@ export default function EditProjectPage() {
   const params = useParams();
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const toast = useToast();
 
   useEffect(() => {
     if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
