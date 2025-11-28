@@ -13,6 +13,7 @@ import { useAuthStore } from '@/lib/store/authStore';
 import { ContactAgentModal } from '@/components/ContactAgentModal';
 import { Home, Bath, Ruler } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useToast } from '@/components/ui/Toast';
 
 // Using iframe-based map instead of Leaflet for better reliability
 
@@ -29,6 +30,7 @@ export default function ListingDetailPage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'overview' | 'location' | 'finance'>('overview');
   
   const favorited = listing ? isFavorite(listing.id) : false;

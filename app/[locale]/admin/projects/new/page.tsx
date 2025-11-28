@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/Input';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { SimpleMapSelector } from '@/components/admin/SimpleMapSelector';
 import { kabulDistricts } from '@/lib/utils/districts';
+import { useToast } from '@/components/ui/Toast';
 
 export default function NewProjectPage() {
   const t = useTranslations();

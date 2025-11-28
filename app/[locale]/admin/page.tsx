@@ -21,7 +21,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const toast = useToast();
-  const confirm = useConfirm();
+  const { confirm } = useConfirm();
   const [listings, setListings] = useState<Listing[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);

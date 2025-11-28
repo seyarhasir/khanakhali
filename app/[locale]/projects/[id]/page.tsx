@@ -8,6 +8,7 @@ import { projectsService } from '@/lib/services/projects.service';
 import { Project } from '@/lib/types/project.types';
 import { MapPin, Phone, Mail, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useToast } from '@/components/ui/Toast';
 
 // Using iframe-based map instead of Leaflet for better reliability
 
@@ -19,6 +20,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const toast = useToast();
 
   useEffect(() => {
     const fetchProject = async () => {

@@ -13,6 +13,7 @@ import { ImageUpload } from '@/components/admin/ImageUpload';
 import { SimpleMapSelector } from '@/components/admin/SimpleMapSelector';
 import { kabulDistricts } from '@/lib/utils/districts';
 import Image from 'next/image';
+import { useToast } from '@/components/ui/Toast';
 
 export default function EditProjectPage() {
   const t = useTranslations();
