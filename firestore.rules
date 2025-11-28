@@ -13,6 +13,13 @@ service cloud.firestore {
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
+    // Helper function to check if user is admin or agent
+    function isAdminOrAgent() {
+      return isAuthenticated() && 
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'agent');
+    }
+    
     // Helper function to check if user owns the document
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
@@ -41,22 +48,22 @@ service cloud.firestore {
       // The service layer filters to only show active listings
       allow read: if true;
       
-      // Only admins can create listings
-      allow create: if isAdmin() &&
+      // Admins and agents can create listings
+      allow create: if isAdminOrAgent() &&
                       request.resource.data.createdBy == request.auth.uid &&
                       request.resource.data.title is string &&
                       request.resource.data.description is string &&
                       request.resource.data.price is number &&
                       request.resource.data.price > 0 &&
                       request.resource.data.location is map &&
-                      request.resource.data.status in ['active', 'sold', 'pending'];
+                      request.resource.data.status in ['active', 'sold', 'pending', 'rented', 'pledged'];
       
-      // Only the admin who created the listing can update it
-      allow update: if isAdmin() &&
+      // Admin and agent who created the listing can update it
+      allow update: if isAdminOrAgent() &&
                       resource.data.createdBy == request.auth.uid;
       
-      // Only the admin who created the listing can delete it
-      allow delete: if isAdmin() &&
+      // Admin and agent who created the listing can delete it (or mark for deletion)
+      allow delete: if isAdminOrAgent() &&
                       resource.data.createdBy == request.auth.uid;
     }
     
@@ -65,8 +72,8 @@ service cloud.firestore {
       // Anyone can read projects (public access for website)
       allow read: if true;
       
-      // Only admins can create projects
-      allow create: if isAdmin() &&
+      // Admins and agents can create projects
+      allow create: if isAdminOrAgent() &&
                       request.resource.data.createdBy == request.auth.uid &&
                       request.resource.data.name is string &&
                       request.resource.data.description is string &&
@@ -75,12 +82,12 @@ service cloud.firestore {
                       request.resource.data.location is map &&
                       request.resource.data.status in ['upcoming', 'under-construction', 'completed', 'sold-out'];
       
-      // Only the admin who created the project can update it
-      allow update: if isAdmin() &&
+      // Admin and agent who created the project can update it
+      allow update: if isAdminOrAgent() &&
                       resource.data.createdBy == request.auth.uid;
       
-      // Only the admin who created the project can delete it
-      allow delete: if isAdmin() &&
+      // Admin and agent who created the project can delete it
+      allow delete: if isAdminOrAgent() &&
                       resource.data.createdBy == request.auth.uid;
     }
     
@@ -90,4 +97,3 @@ service cloud.firestore {
     }
   }
 }
-
