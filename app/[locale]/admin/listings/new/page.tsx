@@ -19,18 +19,17 @@ export default function NewListingPage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const toast = useToast();
 
   useEffect(() => {
     // Wait for auth to finish loading before checking
-    const { isLoading } = useAuthStore.getState();
-    if (isLoading) return;
+    if (authLoading) return;
 
     if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
       router.push(`/${locale}/login`);
     }
-  }, [user, isAuthenticated, router, locale]);
+  }, [user, isAuthenticated, authLoading, router, locale]);
 
   const [formData, setFormData] = useState<CreateListingInput>({
     title: '',
