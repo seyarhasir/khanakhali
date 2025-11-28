@@ -423,9 +423,10 @@ export const listingsService = {
       const docRef = doc(db, 'listings', id);
       await updateDoc(docRef, {
         pendingApproval: false,
+        status: 'active',
         updatedAt: serverTimestamp(),
       });
-      console.log('✅ Listing approved:', id);
+      console.log('✅ Listing approved and activated:', id);
     } catch (error: any) {
       console.error('❌ Approve listing error:', error);
       throw new Error(error.message || 'Failed to approve listing');
