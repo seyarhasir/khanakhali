@@ -73,18 +73,23 @@ service cloud.firestore {
       // CRITICAL: Admin and agent can update, but agents have strict restrictions
       allow update: if isAdminOrAgent() &&
                       resource.data.createdBy == request.auth.uid &&
-                      // If agent is updating, enforce restrictions
+                      // If admin, allow all updates
                       (!isAgent() || 
-                       // CASE 1: Agent requesting deletion - MUST have both flags
+                       // If agent, check specific conditions:
+                       // CONDITION 1: Agent requesting deletion (pendingDelete=true)
+                       // This MUST be allowed - it's how agents request deletion
                        (request.resource.data.pendingDelete == true && 
                         request.resource.data.pendingApproval == true) ||
-                       // CASE 2: Agent updating normally - cannot activate or remove pendingApproval
+                       // CONDITION 2: Agent updating normally (not requesting deletion)
+                       // Must preserve pending status and pendingApproval
                        (request.resource.data.pendingDelete != true &&
-                        // Status must stay pending or unchanged
+                        request.resource.data.pendingDelete != 'true' &&
+                        // Status must stay pending or unchanged (cannot activate)
                         (request.resource.data.status == 'pending' || 
                          request.resource.data.status == resource.data.status) &&
                         // pendingApproval must be true (cannot remove it)
-                        request.resource.data.pendingApproval == true));
+                        (request.resource.data.pendingApproval == true || 
+                         request.resource.data.pendingApproval == 'true')));
       
       // CRITICAL: Only admins can actually delete. Agents must use update to set pendingDelete=true
       // This prevents agents from bypassing the approval system
