@@ -293,9 +293,12 @@ export const listingsService = {
         // First fetch the original listing
         const originalListing = await listingsService.fetchListingById(id);
         
+        // Clean the original listing data to remove undefined values
+        const cleanedOriginalData = removeUndefined(originalListing);
+        
         const updateData: any = {
           pendingApproval: true,
-          originalData: originalListing, // Store original data for admin review
+          originalData: cleanedOriginalData, // Store cleaned original data for admin review
           updatedAt: serverTimestamp(),
         };
         
@@ -304,7 +307,9 @@ export const listingsService = {
         if (images !== undefined) {
           pendingChanges.imageUrls = images;
         }
-        updateData.pendingChanges = pendingChanges;
+        // Clean pending changes too
+        const cleanedPendingChanges = removeUndefined(pendingChanges);
+        updateData.pendingChanges = cleanedPendingChanges;
         
         await updateDoc(docRef, updateData);
         console.log('✅ Listing update pending approval:', id);
