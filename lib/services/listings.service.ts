@@ -521,7 +521,7 @@ export const listingsService = {
     }
   },
 
-  // Fetch all pending approvals (admin only)
+  // Fetch all pending approvals (admin only) - includes both 'active' and 'pending' status
   fetchPendingApprovals: async (): Promise<Listing[]> => {
     try {
       const db = getDb();
@@ -535,10 +535,14 @@ export const listingsService = {
       const listings: Listing[] = [];
       
       querySnapshot.forEach((doc) => {
-        listings.push(convertDocToListing(doc));
+        const listing = convertDocToListing(doc);
+        // Only include if not marked for deletion (deletion has separate queue)
+        if (!listing.pendingDelete) {
+          listings.push(listing);
+        }
       });
       
-      console.log(`✅ Fetched ${listings.length} pending approvals`);
+      console.log(`✅ Fetched ${listings.length} pending approvals (excluded ${querySnapshot.size - listings.length} pending deletes)`);
       return listings;
     } catch (error: any) {
       console.error('❌ Fetch pending approvals error:', error);
