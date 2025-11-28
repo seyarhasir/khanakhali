@@ -9,12 +9,14 @@ import { Listing } from '@/lib/types/listing.types';
 import { Button } from '@/components/ui/Button';
 import { CheckCircle2, XCircle, AlertCircle, Trash2, Edit3 } from 'lucide-react';
 import Image from 'next/image';
+import { useToast } from '@/components/ui/Toast';
 
 export default function ApprovalsPage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const toast = useToast();
   const [pendingListings, setPendingListings] = useState<Listing[]>([]);
   const [pendingDeletes, setPendingDeletes] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,23 +54,21 @@ export default function ApprovalsPage() {
     try {
       await listingsService.approveNewListing(id);
       setPendingListings(pendingListings.filter(l => l.id !== id));
-      alert('Listing approved successfully!');
+      toast.success('Listing approved successfully!');
     } catch (error) {
       console.error('Error approving listing:', error);
-      alert('Failed to approve listing');
+      toast.error('Failed to approve listing');
     }
   };
 
   const handleRejectNew = async (id: string) => {
-    if (confirm('Are you sure you want to reject and delete this listing?')) {
-      try {
-        await listingsService.rejectNewListing(id);
-        setPendingListings(pendingListings.filter(l => l.id !== id));
-        alert('Listing rejected and deleted');
-      } catch (error) {
-        console.error('Error rejecting listing:', error);
-        alert('Failed to reject listing');
-      }
+    try {
+      await listingsService.rejectNewListing(id);
+      setPendingListings(pendingListings.filter(l => l.id !== id));
+      toast.success('Listing rejected and deleted');
+    } catch (error) {
+      console.error('Error rejecting listing:', error);
+      toast.error('Failed to reject listing');
     }
   };
 
@@ -76,10 +76,10 @@ export default function ApprovalsPage() {
     try {
       await listingsService.approveEdit(id);
       setPendingListings(pendingListings.filter(l => l.id !== id));
-      alert('Edit approved successfully!');
+      toast.success('Edit approved successfully!');
     } catch (error) {
       console.error('Error approving edit:', error);
-      alert('Failed to approve edit');
+      toast.error('Failed to approve edit');
     }
   };
 
@@ -87,23 +87,21 @@ export default function ApprovalsPage() {
     try {
       await listingsService.rejectEdit(id);
       setPendingListings(pendingListings.filter(l => l.id !== id));
-      alert('Edit rejected');
+      toast.success('Edit rejected');
     } catch (error) {
       console.error('Error rejecting edit:', error);
-      alert('Failed to reject edit');
+      toast.error('Failed to reject edit');
     }
   };
 
   const handleApproveDelete = async (id: string) => {
-    if (confirm('Are you sure you want to approve this delete request?')) {
-      try {
-        await listingsService.approveDelete(id);
-        setPendingDeletes(pendingDeletes.filter(l => l.id !== id));
-        alert('Delete approved successfully!');
-      } catch (error) {
-        console.error('Error approving delete:', error);
-        alert('Failed to approve delete');
-      }
+    try {
+      await listingsService.approveDelete(id);
+      setPendingDeletes(pendingDeletes.filter(l => l.id !== id));
+      toast.success('Delete approved successfully!');
+    } catch (error) {
+      console.error('Error approving delete:', error);
+      toast.error('Failed to approve delete');
     }
   };
 
@@ -111,10 +109,10 @@ export default function ApprovalsPage() {
     try {
       await listingsService.rejectDelete(id);
       setPendingDeletes(pendingDeletes.filter(l => l.id !== id));
-      alert('Delete request rejected');
+      toast.success('Delete request rejected');
     } catch (error) {
       console.error('Error rejecting delete:', error);
-      alert('Failed to reject delete');
+      toast.error('Failed to reject delete');
     }
   };
 

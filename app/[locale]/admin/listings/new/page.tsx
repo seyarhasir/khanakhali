@@ -13,12 +13,14 @@ import { ImageUpload } from '@/components/admin/ImageUpload';
 import { SimpleMapSelector } from '@/components/admin/SimpleMapSelector';
 import { DetailedListingForm } from '@/components/admin/DetailedListingForm';
 import { kabulDistricts } from '@/lib/utils/districts';
+import { useToast } from '@/components/ui/Toast';
 
 export default function NewListingPage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const toast = useToast();
 
   useEffect(() => {
     if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
@@ -111,12 +113,14 @@ export default function NewListingPage() {
       
       // Show success message for agents
       if (user.role === 'agent') {
-        alert('Listing submitted successfully! Waiting for admin approval.');
+        toast.success('Listing submitted successfully! Waiting for admin approval.');
+      } else {
+        toast.success('Listing created successfully!');
       }
       
       router.push(`/${locale}/admin`);
     } catch (error: any) {
-      alert(error.message || t('admin.errors.createFailed'));
+      toast.error(error.message || t('admin.errors.createFailed'));
       setIsLoading(false); // Re-enable button only on error
     }
   };

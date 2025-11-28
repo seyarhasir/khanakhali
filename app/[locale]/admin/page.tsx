@@ -12,12 +12,16 @@ import { Project } from '@/lib/types/project.types';
 import { ListingCard } from '@/components/listings/ListingCard';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export default function AdminPage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [listings, setListings] = useState<Listing[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -143,13 +147,21 @@ export default function AdminPage() {
                     fullWidth
                     className="text-sm sm:text-base py-2 sm:py-3"
                     onClick={async () => {
-                      if (confirm('Are you sure you want to delete this listing?')) {
+                      const confirmed = await confirm({
+                        title: 'Delete Listing',
+                        message: 'Are you sure you want to delete this listing? This action cannot be undone.',
+                        confirmText: 'Delete',
+                        type: 'danger',
+                      });
+                      
+                      if (confirmed) {
                         try {
                           await listingsService.deleteListing(listing.id, user?.role || 'user');
                           setListings(listings.filter((l) => l.id !== listing.id));
+                          toast.success('Listing deleted successfully');
                         } catch (error) {
                           console.error('Error deleting listing:', error);
-                          alert('Failed to delete listing');
+                          toast.error('Failed to delete listing');
                         }
                       }
                     }}
@@ -200,13 +212,21 @@ export default function AdminPage() {
                       fullWidth
                       className="text-sm py-2"
                       onClick={async () => {
-                        if (confirm('Are you sure you want to delete this project?')) {
+                        const confirmed = await confirm({
+                          title: 'Delete Project',
+                          message: 'Are you sure you want to delete this project? This action cannot be undone.',
+                          confirmText: 'Delete',
+                          type: 'danger',
+                        });
+                        
+                        if (confirmed) {
                           try {
                             await projectsService.deleteProject(project.id);
                             setProjects(projects.filter((p) => p.id !== project.id));
+                            toast.success('Project deleted successfully');
                           } catch (error) {
                             console.error('Error deleting project:', error);
-                            alert('Failed to delete project');
+                            toast.error('Failed to delete project');
                           }
                         }
                       }}

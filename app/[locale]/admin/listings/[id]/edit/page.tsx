@@ -14,6 +14,7 @@ import { SimpleMapSelector } from '@/components/admin/SimpleMapSelector';
 import { DetailedListingForm } from '@/components/admin/DetailedListingForm';
 import { kabulDistricts } from '@/lib/utils/districts';
 import Image from 'next/image';
+import { useToast } from '@/components/ui/Toast';
 
 export default function EditListingPage() {
   const t = useTranslations();
@@ -21,6 +22,7 @@ export default function EditListingPage() {
   const params = useParams();
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const toast = useToast();
 
   useEffect(() => {
     if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
@@ -194,8 +196,9 @@ export default function EditListingPage() {
       await listingsService.updateListing(listingId, { id: listingId, ...formData }, user?.role || 'user', allImageUrls);
       
       router.push(`/${locale}/admin`);
+      toast.success('Listing updated successfully!');
     } catch (error: any) {
-      alert(error.message || t('admin.errors.createFailed'));
+      toast.error(error.message || t('admin.errors.updateFailed'));
     } finally {
       setIsSaving(false);
     }

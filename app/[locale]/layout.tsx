@@ -7,6 +7,8 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { LocalePreserver } from '@/components/layout/LocalePreserver';
+import { ToastProvider } from '@/components/ui/Toast';
+import { ConfirmDialogProvider } from '@/components/ui/ConfirmDialog';
 import type { Locale } from '@/i18n/request';
 
 export function generateStaticParams() {
@@ -78,14 +80,18 @@ export default async function LocaleLayout({
       </head>
       <body className="overflow-x-hidden">
         <NextIntlClientProvider messages={messages}>
-          <AuthProvider>
-            <LocalePreserver locale={locale} />
-            <Navbar />
-            <main className="overflow-x-hidden">
-              {children}
-            </main>
-            <Footer />
-          </AuthProvider>
+          <ToastProvider>
+            <ConfirmDialogProvider>
+              <AuthProvider>
+                <LocalePreserver locale={locale} />
+                <Navbar />
+                <main className="overflow-x-hidden">
+                  {children}
+                </main>
+                <Footer />
+              </AuthProvider>
+            </ConfirmDialogProvider>
+          </ToastProvider>
         </NextIntlClientProvider>
         <Analytics />
       </body>
