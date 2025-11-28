@@ -391,7 +391,7 @@ export const listingsService = {
     }
   },
 
-  // Fetch listings created by specific user (admin view)
+  // Fetch listings created by specific user (admin view) - excludes pending deletions
   fetchAdminListings: async (userId: string): Promise<Listing[]> => {
     try {
       const db = getDb();
@@ -405,7 +405,11 @@ export const listingsService = {
       const listings: Listing[] = [];
       
       querySnapshot.forEach((doc) => {
-        listings.push(convertDocToListing(doc));
+        const listing = convertDocToListing(doc);
+        // Exclude listings marked for deletion (they're in pending deletes queue)
+        if (!listing.pendingDelete) {
+          listings.push(listing);
+        }
       });
       
       console.log(`✅ Fetched ${listings.length} admin listings`);

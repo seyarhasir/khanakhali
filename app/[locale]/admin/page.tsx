@@ -73,13 +73,13 @@ export default function AdminPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-brand-slate mb-2">{t('admin.adminDashboard')}</h1>
-          <p className="text-sm sm:text-base text-brand-gray">Manage listings and projects</p>
+          <p className="text-sm sm:text-base text-brand-gray">{t('admin.manageListings')}</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           {user?.role === 'admin' && (
             <Link href={`/${locale}/admin/approvals`} className="flex-1 sm:flex-none">
               <Button variant="outline" className="w-full sm:w-auto text-sm sm:text-base border-yellow-400 text-yellow-700 hover:bg-yellow-50 whitespace-nowrap">
-                Pending Approvals
+                {t('admin.pendingApprovals')}
               </Button>
             </Link>
           )}
@@ -89,7 +89,7 @@ export default function AdminPage() {
             </Link>
           ) : (
             <Link href={`/${locale}/admin/projects/new`} className="flex-1 sm:flex-none">
-              <Button className="w-full sm:w-auto text-sm sm:text-base">Add New Project</Button>
+              <Button className="w-full sm:w-auto text-sm sm:text-base">{t('admin.addNewProject')}</Button>
             </Link>
           )}
         </div>
@@ -105,7 +105,7 @@ export default function AdminPage() {
               : 'border-transparent text-gray-500 hover:text-brand-slate'
           }`}
         >
-          Listings ({listings.length})
+          {t('admin.listings')} ({listings.length})
         </button>
         <button
           onClick={() => setActiveTab('projects')}
@@ -115,7 +115,7 @@ export default function AdminPage() {
               : 'border-transparent text-gray-500 hover:text-brand-slate'
           }`}
         >
-          Projects ({projects.length})
+          {t('admin.projects')} ({projects.length})
         </button>
       </div>
 
@@ -176,7 +176,7 @@ export default function AdminPage() {
       ) : (
         projects.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center">
-            <p className="text-brand-gray text-lg mb-4">No projects yet</p>
+            <p className="text-brand-gray text-lg mb-4">{t('admin.noProjectsYet')}</p>
             <Link href={`/${locale}/admin/projects/new`}>
               <Button>Create First Project</Button>
             </Link>
