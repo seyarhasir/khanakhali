@@ -441,17 +441,7 @@ export default function ProfilePage() {
             )}
 
             {/* Account Actions */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 space-y-3">
-              <Button 
-                onClick={async () => {
-                  await refreshUser();
-                  window.location.reload();
-                }}
-                variant="outline"
-                fullWidth
-              >
-                🔄 Refresh Profile Data
-              </Button>
+            <div className="bg-white rounded-2xl shadow-lg p-6">
               <Button variant="danger" onClick={handleLogout} fullWidth>
                 {t('profile.logout')}
               </Button>
