@@ -97,7 +97,7 @@ export const Navbar: React.FC = () => {
             
             {isAuthenticated ? (
               <>
-                {user?.role === 'admin' && (
+                {(user?.role === 'admin' || user?.role === 'agent') && (
                   <Link
                     href={`/${locale}/admin`}
                     className="text-sm lg:text-base text-white hover:text-brand-secondary transition-colors font-medium"
@@ -287,7 +287,7 @@ export const Navbar: React.FC = () => {
             {/* Navigation Links */}
             {isAuthenticated && (
               <>
-                {user?.role === 'admin' && (
+                {(user?.role === 'admin' || user?.role === 'agent') && (
                   <Link
                     href={`/${locale}/admin`}
                     onClick={() => setIsMobileMenuOpen(false)}
