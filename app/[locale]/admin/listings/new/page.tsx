@@ -120,8 +120,8 @@ export default function NewListingPage() {
         
         const imageUrls = await storageService.uploadListingImages(reorderedImages, listing.id);
         console.log('✅ Images uploaded:', imageUrls.length);
-        // Update listing with image URLs (use admin role to avoid creating second approval)
-        await listingsService.updateListing(listing.id, { id: listing.id }, 'admin', imageUrls);
+        // Update listing with image URLs - use actual user role to maintain pending status for agents
+        await listingsService.updateListing(listing.id, { id: listing.id }, user.role || 'user', imageUrls);
       }
       
       // Show success message for agents

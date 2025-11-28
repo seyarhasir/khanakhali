@@ -166,7 +166,8 @@ export const listingsService = {
         // 1. Status is 'active'
         // 2. NOT pending approval (agent submissions)
         // 3. NOT pending deletion
-        if (!listing.pendingApproval && !listing.pendingDelete) {
+        // 4. CRITICAL: Also exclude if status is 'pending' (agent listings not yet approved)
+        if (!listing.pendingApproval && !listing.pendingDelete && listing.status === 'active') {
           listings.push(listing);
         }
       });
