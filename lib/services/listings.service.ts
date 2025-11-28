@@ -722,14 +722,25 @@ export const listingsService = {
     try {
       const db = getDb();
       const docRef = doc(db, 'listings', id);
-      await updateDoc(docRef, {
+      
+      const updateData: any = {
         pendingApproval: false,
         status: 'active',
         updatedAt: serverTimestamp(),
-      });
+      };
+      
+      // Clean undefined values
+      const cleanedData = removeUndefined(updateData);
+      
+      await updateDoc(docRef, cleanedData);
       console.log('✅ Listing approved and activated:', id);
     } catch (error: any) {
       console.error('❌ Approve listing error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        id,
+      });
       throw new Error(error.message || 'Failed to approve listing');
     }
   },
@@ -738,10 +749,23 @@ export const listingsService = {
   rejectNewListing: async (id: string): Promise<void> => {
     try {
       const db = getDb();
-      await deleteDoc(doc(db, 'listings', id));
+      const docRef = doc(db, 'listings', id);
+      
+      // Verify listing exists before deleting
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        throw new Error('Listing not found');
+      }
+      
+      await deleteDoc(docRef);
       console.log('✅ Listing rejected and deleted:', id);
     } catch (error: any) {
       console.error('❌ Reject listing error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        id,
+      });
       throw new Error(error.message || 'Failed to reject listing');
     }
   },
@@ -760,19 +784,30 @@ export const listingsService = {
       const data = docSnap.data();
       const pendingChanges = data.pendingChanges || {};
       
+      // Clean pendingChanges to remove undefined values
+      const cleanedPendingChanges = removeUndefined(pendingChanges);
+      
       // Apply the pending changes
       const updateData: any = {
-        ...pendingChanges,
+        ...cleanedPendingChanges,
         pendingApproval: false,
         pendingChanges: null,
         originalData: null,
         updatedAt: serverTimestamp(),
       };
       
-      await updateDoc(docRef, updateData);
+      // Clean the entire update data
+      const cleanedData = removeUndefined(updateData);
+      
+      await updateDoc(docRef, cleanedData);
       console.log('✅ Edit approved:', id);
     } catch (error: any) {
       console.error('❌ Approve edit error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        id,
+      });
       throw new Error(error.message || 'Failed to approve edit');
     }
   },
@@ -782,15 +817,32 @@ export const listingsService = {
     try {
       const db = getDb();
       const docRef = doc(db, 'listings', id);
-      await updateDoc(docRef, {
+      
+      // Verify listing exists
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        throw new Error('Listing not found');
+      }
+      
+      const updateData: any = {
         pendingApproval: false,
         pendingChanges: null,
         originalData: null,
         updatedAt: serverTimestamp(),
-      });
+      };
+      
+      // Clean undefined values
+      const cleanedData = removeUndefined(updateData);
+      
+      await updateDoc(docRef, cleanedData);
       console.log('✅ Edit rejected:', id);
     } catch (error: any) {
       console.error('❌ Reject edit error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        id,
+      });
       throw new Error(error.message || 'Failed to reject edit');
     }
   },
