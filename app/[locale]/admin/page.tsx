@@ -24,8 +24,9 @@ export default function AdminPage() {
   const { confirm } = useConfirm();
   const [listings, setListings] = useState<Listing[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [agentListings, setAgentListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'listings' | 'projects'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'projects' | 'agent-listings'>('listings');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -41,7 +42,7 @@ export default function AdminPage() {
     const fetchData = async () => {
       try {
         if (user) {
-          const [listingsData, projectsData] = await Promise.all([
+          const [listingsData, projectsData, agentListingsData] = await Promise.all([
             listingsService.fetchAdminListings(user.uid).catch((err) => {
               console.error('Error fetching listings:', err);
               return [];
@@ -50,9 +51,15 @@ export default function AdminPage() {
               console.error('Error fetching projects:', err);
               return [];
             }),
+            // Only fetch agent listings if user is admin
+            user.role === 'admin' ? listingsService.fetchAgentListings().catch((err) => {
+              console.error('Error fetching agent listings:', err);
+              return [];
+            }) : Promise.resolve([]),
           ]);
           setListings(listingsData);
           setProjects(projectsData);
+          setAgentListings(agentListingsData);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -107,6 +114,18 @@ export default function AdminPage() {
         >
           {t('admin.listings')} ({listings.length})
         </button>
+        {user?.role === 'admin' && (
+          <button
+            onClick={() => setActiveTab('agent-listings')}
+            className={`px-4 py-2 font-semibold transition-colors border-b-2 ${
+              activeTab === 'agent-listings'
+                ? 'border-brand-primary text-brand-primary'
+                : 'border-transparent text-gray-500 hover:text-brand-slate'
+            }`}
+          >
+            {t('admin.agentListings')} ({agentListings.length})
+          </button>
+        )}
         <button
           onClick={() => setActiveTab('projects')}
           className={`px-4 py-2 font-semibold transition-colors border-b-2 ${
