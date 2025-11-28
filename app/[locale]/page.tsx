@@ -23,6 +23,9 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  // Limit to 4 projects
+  const displayedProjects = projects.slice(0, 4);
+
   const checkScrollButtons = () => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
@@ -48,12 +51,15 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
         window.removeEventListener('resize', checkScrollButtons);
       };
     }
-  }, [projects]);
+  }, [displayedProjects]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const cardWidth = container.querySelector('.project-card')?.clientWidth || 400;
+      const firstCard = container.querySelector('.project-card') as HTMLElement;
+      if (!firstCard) return;
+      
+      const cardWidth = firstCard.offsetWidth;
       const gap = 24; // gap-6 = 24px
       const scrollAmount = cardWidth + gap;
       
@@ -63,6 +69,11 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
       });
     }
   };
+
+  // Don't render if no projects
+  if (displayedProjects.length === 0) {
+    return null;
+  }
 
   return (
     <div className="bg-brand-secondary-soft py-16 md:py-24">
@@ -78,7 +89,7 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
 
         {/* Slider Container */}
         <div className="relative">
-          {/* Navigation Buttons */}
+          {/* Navigation Buttons - Only show on desktop (md and up) */}
           {canScrollLeft && (
             <button
               onClick={() => scroll('left')}
@@ -101,16 +112,18 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
           {/* Scrollable Container */}
           <div
             ref={scrollContainerRef}
-            className="flex gap-6 overflow-x-auto pb-4 scroll-smooth hide-scrollbar"
+            className="flex gap-6 overflow-x-auto pb-4 scroll-smooth hide-scrollbar snap-x snap-mandatory"
             style={{
               WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
             onScroll={checkScrollButtons}
           >
-            {projects.map((project) => (
+            {displayedProjects.map((project) => (
               <div
                 key={project.id}
-                className="project-card flex-shrink-0 w-[90vw] sm:w-[400px] md:w-[420px] lg:w-[380px]"
+                className="project-card flex-shrink-0 w-[90vw] sm:w-[400px] md:w-[420px] lg:w-[380px] snap-start"
               >
                 <ProjectCard project={project} />
               </div>

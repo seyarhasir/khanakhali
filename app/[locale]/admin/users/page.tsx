@@ -18,7 +18,7 @@ export default function AdminUsersPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const toast = useToast();
-  const { confirm } = useConfirm();
+  const confirm = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export default function AdminUsersPage() {
       return; // No change needed
     }
 
-    const confirmed = await confirm.confirm({
+    const confirmed = await confirm({
       title: t('admin.changeRole'),
       message: t('admin.changeRoleConfirm', { 
         name: targetUser?.displayName || targetUser?.email || 'User',
