@@ -5,12 +5,23 @@ import {
   onAuthStateChanged as firebaseOnAuthStateChanged,
   sendPasswordResetEmail,
   User as FirebaseUser,
+  setPersistence,
+  browserLocalPersistence,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { getAuthInstance, getDbInstance } from '../firebase/config';
 import { User } from '../types/user.types';
 
-const getAuth = () => getAuthInstance();
+const getAuth = () => {
+  const auth = getAuthInstance();
+  // Ensure persistence is set to LOCAL (survives page reloads)
+  if (typeof window !== 'undefined') {
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.error('Failed to set auth persistence:', error);
+    });
+  }
+  return auth;
+};
 const getDb = () => getDbInstance();
 
 // Convert Firebase User to our User type

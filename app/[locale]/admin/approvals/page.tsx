@@ -22,6 +22,10 @@ export default function ApprovalsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking
+    const { isLoading } = useAuthStore.getState();
+    if (isLoading) return;
+
     if (!isAuthenticated || user?.role !== 'admin') {
       router.push(`/${locale}/login`);
       return;

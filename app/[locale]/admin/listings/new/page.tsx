@@ -23,6 +23,10 @@ export default function NewListingPage() {
   const toast = useToast();
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking
+    const { isLoading } = useAuthStore.getState();
+    if (isLoading) return;
+
     if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
       router.push(`/${locale}/login`);
     }
