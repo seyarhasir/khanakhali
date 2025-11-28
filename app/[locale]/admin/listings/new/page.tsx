@@ -87,7 +87,7 @@ export default function NewListingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm() || !user) return;
+    if (!validateForm() || !user || isLoading) return; // Prevent double submission
 
     setIsLoading(true);
     try {
@@ -105,15 +105,19 @@ export default function NewListingPage() {
         }
         
         const imageUrls = await storageService.uploadListingImages(reorderedImages, listing.id);
-        // Update listing with image URLs
-        await listingsService.updateListing(listing.id, { id: listing.id }, user.role || 'user', imageUrls);
+        // Update listing with image URLs (use admin role to avoid creating second approval)
+        await listingsService.updateListing(listing.id, { id: listing.id }, 'admin', imageUrls);
+      }
+      
+      // Show success message for agents
+      if (user.role === 'agent') {
+        alert('Listing submitted successfully! Waiting for admin approval.');
       }
       
       router.push(`/${locale}/admin`);
     } catch (error: any) {
       alert(error.message || t('admin.errors.createFailed'));
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Re-enable button only on error
     }
   };
 
