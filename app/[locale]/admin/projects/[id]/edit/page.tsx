@@ -71,6 +71,8 @@ export default function EditProjectPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newProjectType, setNewProjectType] = useState<'apartment' | 'penthouse' | 'office' | 'commercial' | 'plot' | 'villa'>('apartment');
+  const [newProjectTypeBedrooms, setNewProjectTypeBedrooms] = useState('');
+  const [newProjectTypeBathrooms, setNewProjectTypeBathrooms] = useState('');
   const [newProjectTypeMinPrice, setNewProjectTypeMinPrice] = useState('');
   const [newProjectTypeMaxPrice, setNewProjectTypeMaxPrice] = useState('');
   const [newProjectTypeMinDollar, setNewProjectTypeMinDollar] = useState('');
@@ -143,22 +145,22 @@ export default function EditProjectPage() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) newErrors.name = 'Project name is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.developer.trim()) newErrors.developer = 'Developer name is required';
-    if (!formData.developedBy.trim()) newErrors.developedBy = 'Developed by is required';
-    if (!formData.location.city.trim()) newErrors.city = 'City is required';
-    if (!formData.location.district) newErrors.district = 'District is required';
-    if (!formData.location.address.trim()) newErrors.address = 'Address is required';
-    if (existingImages.length === 0 && newImages.length === 0) newErrors.images = 'At least one photo is required';
-    if (formData.projectTypes.length === 0) newErrors.projectTypes = 'At least one project type is required';
+    if (!formData.name.trim()) newErrors.name = t('admin.projectNameRequired');
+    if (!formData.description.trim()) newErrors.description = t('admin.projectDescriptionRequired');
+    if (!formData.developer.trim()) newErrors.developer = t('admin.developerRequired');
+    if (!formData.developedBy.trim()) newErrors.developedBy = t('admin.developedByRequired');
+    if (!formData.location.city.trim()) newErrors.city = t('admin.cityRequired');
+    if (!formData.location.district) newErrors.district = t('admin.districtRequired');
+    if (!formData.location.address.trim()) newErrors.address = t('admin.addressRequired');
+    if (existingImages.length === 0 && newImages.length === 0) newErrors.images = t('admin.imagesRequired');
+    if (formData.projectTypes.length === 0) newErrors.projectTypes = t('admin.projectTypesRequired');
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleAddProjectType = () => {
-    const projectType = {
+    const projectType: any = {
       type: newProjectType,
       priceRange: newProjectTypeMinPrice && newProjectTypeMaxPrice ? {
         min: parseFloat(newProjectTypeMinPrice),
@@ -170,12 +172,24 @@ export default function EditProjectPage() {
       } : undefined,
     };
 
+    // Add bedrooms/bathrooms for apartments, penthouses, and villas
+    if (newProjectType === 'apartment' || newProjectType === 'penthouse' || newProjectType === 'villa') {
+      if (newProjectTypeBedrooms) {
+        projectType.bedrooms = parseInt(newProjectTypeBedrooms);
+      }
+      if (newProjectTypeBathrooms) {
+        projectType.bathrooms = parseInt(newProjectTypeBathrooms);
+      }
+    }
+
     setFormData({
       ...formData,
       projectTypes: [...formData.projectTypes, projectType],
     });
 
     setNewProjectType('apartment');
+    setNewProjectTypeBedrooms('');
+    setNewProjectTypeBathrooms('');
     setNewProjectTypeMinPrice('');
     setNewProjectTypeMaxPrice('');
     setNewProjectTypeMinDollar('');
@@ -230,9 +244,10 @@ export default function EditProjectPage() {
       // Update project
       await projectsService.updateProject(projectId, { id: projectId, ...formData }, allImages);
       
+      toast.success(t('admin.projectUpdated') || 'Project updated successfully!');
       router.push(`/${locale}/admin`);
     } catch (error: any) {
-      alert(error.message || 'Failed to update project');
+      toast.error(error.message || t('admin.projectUpdateFailed') || 'Failed to update project');
     } finally {
       setIsSaving(false);
     }
@@ -242,15 +257,15 @@ export default function EditProjectPage() {
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-slate mb-2">Edit Project</h1>
-          <p className="text-sm sm:text-base text-brand-gray">Update project information</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-slate mb-2">{t('admin.editProject')}</h1>
+          <p className="text-sm sm:text-base text-brand-gray">{t('admin.editProjectSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
           {/* Existing Images */}
           {existingImages.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">Existing Photos</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">{t('admin.existingPhotos')}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {existingImages.map((url, index) => (
                   <div key={index} className="relative group">
@@ -258,7 +273,7 @@ export default function EditProjectPage() {
                       <Image src={url} alt={`Existing ${index + 1}`} fill className="object-cover" />
                       {coverImageIndex === index && (
                         <div className="absolute top-2 left-2 bg-brand-primary text-white px-2 py-1 rounded text-xs font-semibold">
-                          Cover
+                          {t('admin.cover')}
                         </div>
                       )}
                     </div>
@@ -268,14 +283,14 @@ export default function EditProjectPage() {
                         onClick={() => setCoverImageIndex(index)}
                         className="flex-1 text-xs py-1 px-2 bg-gray-100 hover:bg-gray-200 rounded"
                       >
-                        Set Cover
+                        {t('admin.setAsCover')}
                       </button>
                       <button
                         type="button"
                         onClick={() => handleRemoveExistingImage(index)}
                         className="text-xs py-1 px-2 bg-red-100 hover:bg-red-200 text-red-600 rounded"
                       >
-                        Remove
+                        {t('admin.remove')}
                       </button>
                     </div>
                   </div>
@@ -287,7 +302,7 @@ export default function EditProjectPage() {
           {/* New Photos */}
           <div className="space-y-4 sm:space-y-6">
             <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">
-              {existingImages.length > 0 ? 'Add More Photos' : 'Photos *'}
+              {existingImages.length > 0 ? t('admin.addMorePhotos') : `${t('admin.photos')} *`}
             </h2>
             <ImageUpload
               images={newImages}
@@ -307,25 +322,25 @@ export default function EditProjectPage() {
 
           {/* Basic Information */}
           <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">Basic Information</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">{t('admin.basicInformation')}</h2>
             
             <div>
-              <label className="block text-sm font-medium text-brand-slate mb-2">Project Name *</label>
+              <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.projectName')} *</label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter project name"
+                placeholder={t('admin.projectNamePlaceholder')}
                 className={errors.name ? 'border-red-500' : ''}
               />
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-brand-slate mb-2">Description *</label>
+              <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.projectDescription')} *</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter project description"
+                placeholder={t('admin.projectDescriptionPlaceholder')}
                 rows={6}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
@@ -336,22 +351,22 @@ export default function EditProjectPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">Developer *</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.developer')} *</label>
                 <Input
                   value={formData.developer}
                   onChange={(e) => setFormData({ ...formData, developer: e.target.value })}
-                  placeholder="Developer name"
+                  placeholder={t('admin.developerPlaceholder')}
                   className={errors.developer ? 'border-red-500' : ''}
                 />
                 {errors.developer && <p className="text-red-500 text-sm mt-1">{errors.developer}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">Developed By *</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.developedBy')} *</label>
                 <Input
                   value={formData.developedBy}
                   onChange={(e) => setFormData({ ...formData, developedBy: e.target.value })}
-                  placeholder="Company name"
+                  placeholder={t('admin.developedByPlaceholder')}
                   className={errors.developedBy ? 'border-red-500' : ''}
                 />
                 {errors.developedBy && <p className="text-red-500 text-sm mt-1">{errors.developedBy}</p>}
@@ -359,27 +374,27 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-brand-slate mb-2">Status</label>
+              <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.projectStatus')}</label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
-                <option value="upcoming">Upcoming</option>
-                <option value="under-construction">Under Construction</option>
-                <option value="completed">Completed</option>
-                <option value="sold-out">Sold Out</option>
+                <option value="upcoming">{t('admin.statusUpcoming')}</option>
+                <option value="under-construction">{t('admin.statusUnderConstruction')}</option>
+                <option value="completed">{t('admin.statusCompleted')}</option>
+                <option value="sold-out">{t('admin.statusSoldOut')}</option>
               </select>
             </div>
           </div>
 
           {/* Location */}
           <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">Location</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">{t('admin.location')}</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">City *</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.city')} *</label>
                 <Input
                   value={formData.location.city}
                   onChange={(e) =>
@@ -388,14 +403,14 @@ export default function EditProjectPage() {
                       location: { ...formData.location, city: e.target.value },
                     })
                   }
-                  placeholder="City"
+                  placeholder={t('admin.cityPlaceholder')}
                   className={errors.city ? 'border-red-500' : ''}
                 />
                 {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">District *</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.district')} *</label>
                 <select
                   value={formData.location.district || ''}
                   onChange={(e) =>
@@ -408,7 +423,7 @@ export default function EditProjectPage() {
                     errors.district ? 'border-red-500' : 'border-gray-300'
                   }`}
                 >
-                  <option value="">Select District</option>
+                  <option value="">{t('admin.selectDistrict')}</option>
                   {kabulDistricts.map((district) => (
                     <option key={district.id} value={district.id}>
                       {locale === 'fa' ? district.name : district.nameEn}
@@ -420,7 +435,7 @@ export default function EditProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-brand-slate mb-2">Street Address *</label>
+              <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.streetAddress')} *</label>
               <Input
                 value={formData.location.address}
                 onChange={(e) =>
@@ -429,7 +444,7 @@ export default function EditProjectPage() {
                     location: { ...formData.location, address: e.target.value },
                   })
                 }
-                placeholder="Street address"
+                placeholder={t('admin.streetAddressPlaceholder')}
                 className={errors.address ? 'border-red-500' : ''}
               />
               {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
@@ -450,24 +465,24 @@ export default function EditProjectPage() {
 
           {/* Project Types */}
           <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">Project Types *</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">{t('admin.projectTypes')} *</h2>
             {errors.projectTypes && <p className="text-red-500 text-sm">{errors.projectTypes}</p>}
             
             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-brand-slate mb-2">Type</label>
+                  <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.type')}</label>
                   <select
                     value={newProjectType}
                     onChange={(e) => setNewProjectType(e.target.value as any)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   >
-                    <option value="apartment">Apartment</option>
-                    <option value="penthouse">Penthouse</option>
-                    <option value="office">Office</option>
-                    <option value="commercial">Commercial</option>
-                    <option value="plot">Plot</option>
-                    <option value="villa">Villa</option>
+                    <option value="apartment">{t('admin.projectTypeApartment')}</option>
+                    <option value="penthouse">{t('admin.projectTypePenthouse')}</option>
+                    <option value="office">{t('admin.projectTypeOffice')}</option>
+                    <option value="commercial">{t('admin.projectTypeCommercial')}</option>
+                    <option value="plot">{t('admin.projectTypePlot')}</option>
+                    <option value="villa">{t('admin.projectTypeVilla')}</option>
                   </select>
                 </div>
                 <div className="flex items-end">
@@ -476,46 +491,72 @@ export default function EditProjectPage() {
                     onClick={handleAddProjectType}
                     className="w-full"
                   >
-                    Add Type
+                    {t('admin.addType')}
                   </Button>
                 </div>
               </div>
               
+              {/* Bedrooms/Bathrooms for apartments, penthouses, villas */}
+              {(newProjectType === 'apartment' || newProjectType === 'penthouse' || newProjectType === 'villa') && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.bedrooms')}</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={newProjectTypeBedrooms}
+                      onChange={(e) => setNewProjectTypeBedrooms(e.target.value)}
+                      placeholder={t('admin.bedrooms')}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.bathrooms')}</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={newProjectTypeBathrooms}
+                      onChange={(e) => setNewProjectTypeBathrooms(e.target.value)}
+                      placeholder={t('admin.bathrooms')}
+                    />
+                  </div>
+                </div>
+              )}
+              
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-brand-slate mb-2">Min Price ({t('common.currency')})</label>
+                  <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.minPrice')} ({t('common.currency')})</label>
                   <Input
                     type="number"
                     value={newProjectTypeMinPrice}
                     onChange={(e) => setNewProjectTypeMinPrice(e.target.value)}
-                    placeholder="Min price"
+                    placeholder={t('admin.minPricePlaceholder')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-brand-slate mb-2">Max Price ({t('common.currency')})</label>
+                  <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.maxPrice')} ({t('common.currency')})</label>
                   <Input
                     type="number"
                     value={newProjectTypeMaxPrice}
                     onChange={(e) => setNewProjectTypeMaxPrice(e.target.value)}
-                    placeholder="Max price"
+                    placeholder={t('admin.maxPricePlaceholder')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-brand-slate mb-2">Min Price (USD)</label>
+                  <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.minPriceUSD')}</label>
                   <Input
                     type="number"
                     value={newProjectTypeMinDollar}
                     onChange={(e) => setNewProjectTypeMinDollar(e.target.value)}
-                    placeholder="Min price USD"
+                    placeholder={t('admin.minPriceUSDPlaceholder')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-brand-slate mb-2">Max Price (USD)</label>
+                  <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.maxPriceUSD')}</label>
                   <Input
                     type="number"
                     value={newProjectTypeMaxDollar}
                     onChange={(e) => setNewProjectTypeMaxDollar(e.target.value)}
-                    placeholder="Max price USD"
+                    placeholder={t('admin.maxPriceUSDPlaceholder')}
                   />
                 </div>
               </div>
@@ -524,41 +565,61 @@ export default function EditProjectPage() {
             {/* List of added project types */}
             {formData.projectTypes.length > 0 && (
               <div className="space-y-2">
-                <h3 className="font-semibold text-brand-slate">Added Types:</h3>
-                {formData.projectTypes.map((pt, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                    <div>
-                      <span className="font-medium capitalize">{pt.type}</span>
-                      {pt.priceRange && (
-                        <span className="ml-2 text-sm text-gray-600">
-                          {pt.priceRange.min.toLocaleString()} - {pt.priceRange.max.toLocaleString()} {t('common.currency')}
-                        </span>
-                      )}
-                      {pt.priceInDollarRange && (
-                        <span className="ml-2 text-sm text-gray-600">
-                          (${pt.priceInDollarRange.min.toLocaleString()} - ${pt.priceInDollarRange.max.toLocaleString()})
-                        </span>
-                      )}
+                <h3 className="font-semibold text-brand-slate">{t('admin.addedTypes')}:</h3>
+                {formData.projectTypes.map((pt, index) => {
+                  const typeLabels: Record<string, string> = {
+                    apartment: t('admin.projectTypeApartment'),
+                    penthouse: t('admin.projectTypePenthouse'),
+                    office: t('admin.projectTypeOffice'),
+                    commercial: t('admin.projectTypeCommercial'),
+                    plot: t('admin.projectTypePlot'),
+                    villa: t('admin.projectTypeVilla'),
+                  };
+                  return (
+                    <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                      <div>
+                        <span className="font-medium">{typeLabels[pt.type] || pt.type}</span>
+                        {(pt as any).bedrooms && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            {t('admin.bedrooms')}: {(pt as any).bedrooms}
+                          </span>
+                        )}
+                        {(pt as any).bathrooms && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            {t('admin.bathrooms')}: {(pt as any).bathrooms}
+                          </span>
+                        )}
+                        {pt.priceRange && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            {pt.priceRange.min.toLocaleString()} - {pt.priceRange.max.toLocaleString()} {t('common.currency')}
+                          </span>
+                        )}
+                        {pt.priceInDollarRange && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            (${pt.priceInDollarRange.min.toLocaleString()} - ${pt.priceInDollarRange.max.toLocaleString()})
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveProjectType(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        {t('admin.remove')}
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveProjectType(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
 
           {/* Overall Price Range */}
           <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">Overall Price Range (Optional)</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">{t('admin.overallPriceRange')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">Min Price ({t('common.currency')})</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.minPrice')} ({t('common.currency')})</label>
                 <Input
                   type="number"
                   value={formData.priceRange?.min || ''}
@@ -570,11 +631,11 @@ export default function EditProjectPage() {
                       max: formData.priceRange?.max,
                     } as any,
                   })}
-                  placeholder="Min price"
+                  placeholder={t('admin.minPricePlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">Max Price ({t('common.currency')})</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.maxPrice')} ({t('common.currency')})</label>
                 <Input
                   type="number"
                   value={formData.priceRange?.max || ''}
@@ -586,11 +647,11 @@ export default function EditProjectPage() {
                       max: e.target.value ? parseFloat(e.target.value) : undefined,
                     } as any,
                   })}
-                  placeholder="Max price"
+                  placeholder={t('admin.maxPricePlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">Min Price (USD)</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.minPriceUSD')}</label>
                 <Input
                   type="number"
                   value={formData.priceInDollarRange?.min || ''}
@@ -602,11 +663,11 @@ export default function EditProjectPage() {
                       max: formData.priceInDollarRange?.max,
                     } as any,
                   })}
-                  placeholder="Min price USD"
+                  placeholder={t('admin.minPriceUSDPlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">Max Price (USD)</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.maxPriceUSD')}</label>
                 <Input
                   type="number"
                   value={formData.priceInDollarRange?.max || ''}
@@ -618,7 +679,7 @@ export default function EditProjectPage() {
                       max: e.target.value ? parseFloat(e.target.value) : undefined,
                     } as any,
                   })}
-                  placeholder="Max price USD"
+                  placeholder={t('admin.maxPriceUSDPlaceholder')}
                 />
               </div>
             </div>
@@ -626,31 +687,31 @@ export default function EditProjectPage() {
 
           {/* Contact Information */}
           <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">Contact Information</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">{t('admin.contactInformation')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">Phone</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.phone')}</label>
                 <Input
                   value={formData.contactPhone || ''}
                   onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                  placeholder="Phone number"
+                  placeholder={t('admin.phonePlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-brand-slate mb-2">WhatsApp</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.whatsapp')}</label>
                 <Input
                   value={formData.contactWhatsApp || ''}
                   onChange={(e) => setFormData({ ...formData, contactWhatsApp: e.target.value })}
-                  placeholder="WhatsApp number"
+                  placeholder={t('admin.whatsappPlaceholder')}
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-brand-slate mb-2">Email</label>
+                <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.email')}</label>
                 <Input
                   type="email"
                   value={formData.contactEmail || ''}
                   onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-                  placeholder="Email address"
+                  placeholder={t('admin.emailPlaceholder')}
                 />
               </div>
             </div>
@@ -658,28 +719,38 @@ export default function EditProjectPage() {
 
           {/* Features */}
           <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">Features (Optional)</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-brand-slate border-b border-gray-200 pb-2">{t('admin.projectFeatures')}</h2>
             <div className="space-y-4">
-              {['mainFeatures', 'businessAndCommunication', 'healthcareAndRecreation', 'communityFeatures', 'nearbyFacilities', 'otherFacilities'].map((featureKey) => (
-                <div key={featureKey}>
-                  <label className="block text-sm font-medium text-brand-slate mb-2 capitalize">
-                    {featureKey.replace(/([A-Z])/g, ' $1').trim()}
-                  </label>
-                  <textarea
-                    value={(formData.features as any)[featureKey]?.join(', ') || ''}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      features: {
-                        ...formData.features,
-                        [featureKey]: e.target.value.split(',').map(s => s.trim()).filter(s => s),
-                      },
-                    })}
-                    placeholder="Enter features separated by commas"
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                  />
-                </div>
-              ))}
+              {['mainFeatures', 'businessAndCommunication', 'healthcareAndRecreation', 'communityFeatures', 'nearbyFacilities', 'otherFacilities'].map((featureKey) => {
+                const featureLabels: Record<string, string> = {
+                  mainFeatures: t('admin.detailedFeatures.mainFeatures'),
+                  businessAndCommunication: t('admin.detailedFeatures.businessCommunication'),
+                  healthcareAndRecreation: t('admin.detailedFeatures.healthcareRecreation'),
+                  communityFeatures: t('admin.detailedFeatures.communityFeatures'),
+                  nearbyFacilities: t('admin.detailedFeatures.nearbyFacilities'),
+                  otherFacilities: t('admin.detailedFeatures.otherFacilities'),
+                };
+                return (
+                  <div key={featureKey}>
+                    <label className="block text-sm font-medium text-brand-slate mb-2">
+                      {featureLabels[featureKey] || featureKey.replace(/([A-Z])/g, ' $1').trim()}
+                    </label>
+                    <textarea
+                      value={(formData.features as any)[featureKey]?.join(', ') || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        features: {
+                          ...formData.features,
+                          [featureKey]: e.target.value.split(',').map(s => s.trim()).filter(s => s),
+                        },
+                      })}
+                      placeholder={t('admin.featuresPlaceholder')}
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -690,7 +761,7 @@ export default function EditProjectPage() {
               disabled={isSaving}
               className="flex-1"
             >
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? t('admin.saving') : t('admin.saveChanges')}
             </Button>
             <Button
               type="button"
@@ -698,7 +769,7 @@ export default function EditProjectPage() {
               variant="outline"
               className="sm:w-auto"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </form>
