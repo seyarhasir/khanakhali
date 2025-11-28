@@ -88,12 +88,12 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
         </div>
 
         {/* Slider Container */}
-        <div className="relative">
+        <div className="relative px-8 md:px-12">
           {/* Navigation Buttons - Only show on desktop (md and up) */}
           {canScrollLeft && (
             <button
               onClick={() => scroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:scale-110 border border-gray-200 hidden md:flex items-center justify-center"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:scale-110 border border-gray-200 hidden md:flex items-center justify-center w-12 h-12"
               aria-label="Previous projects"
             >
               <ChevronLeft className="w-6 h-6 text-brand-slate" />
@@ -102,7 +102,7 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
           {canScrollRight && (
             <button
               onClick={() => scroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:scale-110 border border-gray-200 hidden md:flex items-center justify-center"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:scale-110 border border-gray-200 hidden md:flex items-center justify-center w-12 h-12"
               aria-label="Next projects"
             >
               <ChevronRight className="w-6 h-6 text-brand-slate" />
@@ -112,7 +112,7 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
           {/* Scrollable Container */}
           <div
             ref={scrollContainerRef}
-            className="flex gap-6 overflow-x-auto pb-4 scroll-smooth hide-scrollbar snap-x snap-mandatory"
+            className="flex gap-6 overflow-x-auto pb-4 scroll-smooth hide-scrollbar snap-x snap-mandatory md:px-0"
             style={{
               WebkitOverflowScrolling: 'touch',
               scrollbarWidth: 'none',
@@ -123,7 +123,7 @@ function FeaturedProjectsSlider({ projects }: { projects: Project[] }) {
             {displayedProjects.map((project) => (
               <div
                 key={project.id}
-                className="project-card flex-shrink-0 w-[90vw] sm:w-[400px] md:w-[420px] lg:w-[380px] snap-start"
+                className="project-card flex-shrink-0 w-[85vw] sm:w-[400px] md:w-[420px] lg:w-[380px] snap-start"
               >
                 <ProjectCard project={project} />
               </div>
