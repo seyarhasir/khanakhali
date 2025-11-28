@@ -121,7 +121,9 @@ const convertDocToListing = (doc: any): Listing => {
     createdBy: data.createdBy,
     createdAt: convertTimestamp(data.createdAt),
     updatedAt: convertTimestamp(data.updatedAt),
-    status: data.status || 'active',
+    // CRITICAL: Don't default to 'active' - use actual status or determine from pendingApproval
+    // This prevents pending listings from being converted to active
+    status: data.status || (data.pendingApproval ? 'pending' : 'active'),
     // Badges
     isHot: data.isHot || false,
     isVerified: data.isVerified || false,
@@ -162,13 +164,25 @@ export const listingsService = {
       
       querySnapshot.forEach((doc) => {
         const listing = convertDocToListing(doc);
+        // CRITICAL: Multiple layers of protection to exclude pending listings
         // Only include listings that are:
-        // 1. Status is 'active'
+        // 1. Status MUST be 'active' (not 'pending')
         // 2. NOT pending approval (agent submissions)
         // 3. NOT pending deletion
-        // 4. CRITICAL: Also exclude if status is 'pending' (agent listings not yet approved)
-        if (!listing.pendingApproval && !listing.pendingDelete && listing.status === 'active') {
+        // 4. Double-check status is not 'pending' (defensive check)
+        if (
+          listing.status === 'active' && 
+          !listing.pendingApproval && 
+          !listing.pendingDelete &&
+          listing.status !== 'pending' // Extra defensive check
+        ) {
           listings.push(listing);
+        } else {
+          console.log('🚫 Excluded listing:', listing.id, {
+            status: listing.status,
+            pendingApproval: listing.pendingApproval,
+            pendingDelete: listing.pendingDelete,
+          });
         }
       });
       
