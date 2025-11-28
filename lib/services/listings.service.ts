@@ -274,6 +274,10 @@ export const listingsService = {
   // Create new listing (admin or agent)
   createListing: async (data: CreateListingInput, userId: string, userRole: string, images: string[] = []): Promise<Listing> => {
     try {
+      // CRITICAL: Normalize userRole and log it
+      const normalizedRole = (userRole || '').toLowerCase().trim();
+      console.log('🔍 createListing called with:', { userRole, normalizedRole, userId });
+      
       // Always generate property ID if not provided (never use random)
       let propertyId = data.propertyId;
       if (!propertyId || !propertyId.match(/^M\d{4,}$/)) {
@@ -282,25 +286,46 @@ export const listingsService = {
         console.log(`✅ Using generated property ID: ${propertyId}`);
       }
       
+      // CRITICAL: For agents, ALWAYS set status to pending, regardless of data.status
+      const isAgent = normalizedRole === 'agent';
+      const finalStatus = isAgent ? 'pending' : (data.status || 'active');
+      const finalPendingApproval = isAgent ? true : false;
+      
+      console.log('🔍 Status determination:', {
+        isAgent,
+        dataStatus: data.status,
+        finalStatus,
+        finalPendingApproval,
+      });
+      
+      // CRITICAL: Remove status from data if it exists, to prevent override
+      const { status: _, ...dataWithoutStatus } = data;
+      
       const listingData = {
-        ...data,
+        ...dataWithoutStatus, // Don't include status from data
         propertyId,
         imageUrls: images,
         createdBy: userId,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        // If agent creates, set status to pending; admin creates go active
-        status: userRole === 'agent' ? 'pending' : (data.status || 'active'),
-        // If agent creates, mark as pending approval
-        pendingApproval: userRole === 'agent' ? true : false,
+        // CRITICAL: Explicitly set status AFTER spreading data
+        status: finalStatus,
+        // CRITICAL: Explicitly set pendingApproval
+        pendingApproval: finalPendingApproval,
       };
       
       // Remove all undefined values (Firestore doesn't accept undefined)
       const cleanedData = removeUndefined(listingData);
       
+      console.log('🔍 Final listing data before save:', {
+        status: cleanedData.status,
+        pendingApproval: cleanedData.pendingApproval,
+        createdBy: cleanedData.createdBy,
+      });
+      
       const db = getDb();
       const docRef = await addDoc(collection(db, 'listings'), cleanedData);
-      console.log(`✅ Listing created${userRole === 'agent' ? ' (pending approval)' : ''}:`, docRef.id);
+      console.log(`✅ Listing created${isAgent ? ' (pending approval)' : ''}:`, docRef.id, 'Status:', finalStatus);
       
       // Fetch the created listing to return it with timestamps
       const listing = await listingsService.fetchListingById(docRef.id);
@@ -321,8 +346,12 @@ export const listingsService = {
       const db = getDb();
       const docRef = doc(db, 'listings', id);
       
+      // CRITICAL: Normalize userRole and log it
+      const normalizedRole = (userRole || '').toLowerCase().trim();
+      console.log('🔍 updateListing called with:', { userRole, normalizedRole, id });
+      
       // If agent is updating, store the changes and mark as pending approval
-      if (userRole === 'agent') {
+      if (normalizedRole === 'agent') {
         // First fetch the original listing
         const originalListing = await listingsService.fetchListingById(id);
         
@@ -330,8 +359,17 @@ export const listingsService = {
           throw new Error('Listing not found');
         }
         
+        console.log('🔍 Original listing status:', {
+          id,
+          status: originalListing.status,
+          pendingApproval: originalListing.pendingApproval,
+        });
+        
         // Clean the original listing data to remove undefined values
         const cleanedOriginalData = removeUndefined(originalListing);
+        
+        // CRITICAL: Remove status from data if it exists
+        const { status: _, ...dataWithoutStatus } = data;
         
         const updateData: any = {
           // CRITICAL: Explicitly set status to 'pending' to prevent it from going active
@@ -341,8 +379,8 @@ export const listingsService = {
           updatedAt: serverTimestamp(),
         };
         
-        // Store the pending changes in a separate field
-        const pendingChanges: any = { ...data };
+        // Store the pending changes in a separate field (without status)
+        const pendingChanges: any = { ...dataWithoutStatus };
         if (images !== undefined) {
           pendingChanges.imageUrls = images;
         }
@@ -350,8 +388,35 @@ export const listingsService = {
         const cleanedPendingChanges = removeUndefined(pendingChanges);
         updateData.pendingChanges = cleanedPendingChanges;
         
+        console.log('🔍 Update data for agent:', {
+          status: updateData.status,
+          pendingApproval: updateData.pendingApproval,
+        });
+        
         await updateDoc(docRef, updateData);
         console.log('✅ Listing update pending approval (status: pending):', id);
+        
+        // CRITICAL: Verify the update worked
+        const verifyDoc = await getDoc(docRef);
+        if (verifyDoc.exists()) {
+          const verifyData = verifyDoc.data();
+          console.log('🔍 Verification after update:', {
+            id,
+            status: verifyData.status,
+            pendingApproval: verifyData.pendingApproval,
+          });
+          
+          if (verifyData.status !== 'pending' || !verifyData.pendingApproval) {
+            console.error('❌ CRITICAL: Update failed! Status is not pending!', verifyData);
+            // Force it back
+            await updateDoc(docRef, {
+              status: 'pending',
+              pendingApproval: true,
+            });
+            console.log('✅ Forced status back to pending');
+          }
+        }
+        
         return;
       }
       
