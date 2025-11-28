@@ -75,11 +75,16 @@ service cloud.firestore {
                       resource.data.createdBy == request.auth.uid &&
                       // If agent is updating, enforce restrictions
                       (!isAgent() || 
-                       // Agent cannot change status from 'pending' to 'active'
-                       (request.resource.data.status == 'pending' || 
-                        request.resource.data.status == resource.data.status) &&
-                       // Agent cannot remove pendingApproval (must be true)
-                       request.resource.data.pendingApproval == true);
+                       // Agent can set pendingDelete=true to request deletion (requires approval)
+                       (request.resource.data.pendingDelete == true && 
+                        request.resource.data.pendingApproval == true) ||
+                       // OR agent can update normally (but cannot activate or remove pendingApproval)
+                       (request.resource.data.pendingDelete != true &&
+                        // Agent cannot change status from 'pending' to 'active'
+                        (request.resource.data.status == 'pending' || 
+                         request.resource.data.status == resource.data.status) &&
+                        // Agent cannot remove pendingApproval (must be true)
+                        request.resource.data.pendingApproval == true));
       
       // CRITICAL: Only admins can actually delete. Agents must use update to set pendingDelete=true
       // This prevents agents from bypassing the approval system

@@ -537,33 +537,75 @@ export const listingsService = {
         
         // CRITICAL: Set pendingDelete AND pendingApproval to true
         // This ensures it shows up in the approvals page
-        await updateDoc(docRef, {
+        // Also preserve status (don't change it)
+        const updateData: any = {
           pendingDelete: true,
           pendingApproval: true, // CRITICAL: Must be true to show in approvals!
           originalData: cleanedOriginalData, // Store original data for admin review
           updatedAt: serverTimestamp(),
+        };
+        
+        // CRITICAL: Preserve the current status (don't change it)
+        if (originalListing.status) {
+          updateData.status = originalListing.status;
+        }
+        
+        console.log('🔍 Attempting to set pendingDelete:', {
+          id,
+          pendingDelete: updateData.pendingDelete,
+          pendingApproval: updateData.pendingApproval,
+          status: updateData.status,
         });
         
-        console.log('✅ Listing delete pending approval:', id);
+        try {
+          await updateDoc(docRef, updateData);
+          console.log('✅ Listing delete pending approval:', id);
+        } catch (updateError: any) {
+          console.error('❌ CRITICAL: UpdateDoc failed!', updateError);
+          console.error('Error details:', {
+            code: updateError.code,
+            message: updateError.message,
+            updateData,
+          });
+          throw new Error(`Failed to request deletion: ${updateError.message}`);
+        }
+        
+        // CRITICAL: Wait a bit for Firestore to commit
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         // CRITICAL: Verify the update worked
         const verifyDoc = await getDoc(docRef);
-        if (verifyDoc.exists()) {
-          const verifyData = verifyDoc.data();
-          console.log('🔍 Verification after delete request:', {
-            id,
-            pendingDelete: verifyData.pendingDelete,
-            pendingApproval: verifyData.pendingApproval,
-          });
-          
-          if (!verifyData.pendingDelete || !verifyData.pendingApproval) {
-            console.error('❌ CRITICAL: Delete request failed!', verifyData);
-            // Force it back
+        if (!verifyDoc.exists()) {
+          console.error('❌ CRITICAL: Listing disappeared after update!');
+          throw new Error('Listing was deleted instead of marked for deletion');
+        }
+        
+        const verifyData = verifyDoc.data();
+        console.log('🔍 Verification after delete request:', {
+          id,
+          pendingDelete: verifyData.pendingDelete,
+          pendingApproval: verifyData.pendingApproval,
+          pendingDeleteType: typeof verifyData.pendingDelete,
+          pendingApprovalType: typeof verifyData.pendingApproval,
+        });
+        
+        const pendingDeleteValue = verifyData.pendingDelete === true || verifyData.pendingDelete === 'true';
+        const pendingApprovalValue = verifyData.pendingApproval === true || verifyData.pendingApproval === 'true';
+        
+        if (!pendingDeleteValue || !pendingApprovalValue) {
+          console.error('❌ CRITICAL: Delete request failed!', verifyData);
+          // Force it back
+          try {
             await updateDoc(docRef, {
               pendingDelete: true,
               pendingApproval: true,
+              status: originalListing.status || 'pending',
+              updatedAt: serverTimestamp(),
             });
             console.log('✅ Forced delete request flags back to true');
+          } catch (forceError: any) {
+            console.error('❌ CRITICAL: Even force update failed!', forceError);
+            throw new Error(`Failed to set pendingDelete: ${forceError.message}`);
           }
         }
         
