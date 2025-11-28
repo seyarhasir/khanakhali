@@ -421,6 +421,61 @@ export const listingsService = {
     }
   },
 
+  // Fetch all listings created by agents (admin view)
+  fetchAgentListings: async (): Promise<Listing[]> => {
+    try {
+      const db = getDb();
+      // First, get all users with agent role
+      const usersSnapshot = await getDocs(query(
+        collection(db, 'users'),
+        where('role', '==', 'agent')
+      ));
+      
+      const agentUserIds = usersSnapshot.docs.map(doc => doc.id);
+      
+      if (agentUserIds.length === 0) {
+        console.log('✅ No agents found');
+        return [];
+      }
+      
+      // Fetch all listings created by agents
+      const listings: Listing[] = [];
+      
+      // Firestore 'in' query supports up to 10 items, so we need to batch if more agents
+      const batchSize = 10;
+      for (let i = 0; i < agentUserIds.length; i += batchSize) {
+        const batch = agentUserIds.slice(i, i + batchSize);
+        const q = query(
+          collection(db, 'listings'),
+          where('createdBy', 'in', batch),
+          orderBy('createdAt', 'desc')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          const listing = convertDocToListing(doc);
+          // Exclude listings marked for deletion
+          if (!listing.pendingDelete) {
+            listings.push(listing);
+          }
+        });
+      }
+      
+      // Sort by createdAt descending (most recent first)
+      listings.sort((a, b) => {
+        const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+        const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+        return bTime - aTime;
+      });
+      
+      console.log(`✅ Fetched ${listings.length} agent listings from ${agentUserIds.length} agents`);
+      return listings;
+    } catch (error: any) {
+      console.error('❌ Fetch agent listings error:', error);
+      throw new Error(error.message || 'Failed to fetch agent listings');
+    }
+  },
+
   // Approve agent's new listing (admin only)
   approveNewListing: async (id: string): Promise<void> => {
     try {
