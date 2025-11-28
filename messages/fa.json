@@ -152,7 +152,13 @@
     "hot": "داغ",
     "verified": "تأیید شده",
     "premium": "پریمیوم",
-    "added": "افزوده شده"
+    "added": "افزوده شده",
+    "justNow": "همین الان",
+    "minutesAgo": "{count} {count, plural, one {دقیقه} other {دقیقه}} پیش",
+    "hoursAgo": "{count} {count, plural, one {ساعت} other {ساعت}} پیش",
+    "daysAgo": "{count} {count, plural, one {روز} other {روز}} پیش",
+    "monthsAgo": "{count} {count, plural, one {ماه} other {ماه}} پیش",
+    "yearsAgo": "{count} {count, plural, one {سال} other {سال}} پیش"
   },
   "projects": {
     "back": "بازگشت",
