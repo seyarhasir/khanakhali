@@ -162,13 +162,16 @@ export const listingsService = {
       
       querySnapshot.forEach((doc) => {
         const listing = convertDocToListing(doc);
-        // Only include listings that are not pending approval or deletion
+        // Only include listings that are:
+        // 1. Status is 'active'
+        // 2. NOT pending approval (agent submissions)
+        // 3. NOT pending deletion
         if (!listing.pendingApproval && !listing.pendingDelete) {
           listings.push(listing);
         }
       });
       
-      console.log(`✅ Fetched ${listings.length} active listings`);
+      console.log(`✅ Fetched ${listings.length} active listings (excluded ${querySnapshot.size - listings.length} pending)`);
       return listings;
     } catch (error: any) {
       console.error('❌ Fetch listings error:', error);
@@ -273,7 +276,8 @@ export const listingsService = {
         createdBy: userId,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        status: data.status || 'active',
+        // If agent creates, set status to pending; admin creates go active
+        status: userRole === 'agent' ? 'pending' : (data.status || 'active'),
         // If agent creates, mark as pending approval
         pendingApproval: userRole === 'agent' ? true : false,
       };
