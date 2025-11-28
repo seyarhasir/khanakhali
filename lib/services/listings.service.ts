@@ -472,23 +472,69 @@ export const listingsService = {
   // Delete listing (admin or agent)
   deleteListing: async (id: string, userRole: string): Promise<void> => {
     try {
+      // CRITICAL: Normalize userRole and log it
+      const normalizedRole = (userRole || '').toLowerCase().trim();
+      console.log('🔍 deleteListing called with:', { userRole, normalizedRole, id });
+      
       const db = getDb();
       const docRef = doc(db, 'listings', id);
       
-      // If agent is deleting, mark as pending delete instead of actually deleting
-      if (userRole === 'agent') {
+      // If agent is deleting, mark as pending delete and require admin approval
+      if (normalizedRole === 'agent') {
+        // First fetch the original listing to store it for admin review
+        const originalListing = await listingsService.fetchListingById(id);
+        
+        if (!originalListing) {
+          throw new Error('Listing not found');
+        }
+        
+        console.log('🔍 Original listing before delete request:', {
+          id,
+          status: originalListing.status,
+          pendingApproval: originalListing.pendingApproval,
+        });
+        
+        // Clean the original listing data to remove undefined values
+        const cleanedOriginalData = removeUndefined(originalListing);
+        
+        // CRITICAL: Set pendingDelete AND pendingApproval to true
+        // This ensures it shows up in the approvals page
         await updateDoc(docRef, {
           pendingDelete: true,
-          pendingApproval: false, // Clear pending approval if it exists
+          pendingApproval: true, // CRITICAL: Must be true to show in approvals!
+          originalData: cleanedOriginalData, // Store original data for admin review
           updatedAt: serverTimestamp(),
         });
+        
         console.log('✅ Listing delete pending approval:', id);
+        
+        // CRITICAL: Verify the update worked
+        const verifyDoc = await getDoc(docRef);
+        if (verifyDoc.exists()) {
+          const verifyData = verifyDoc.data();
+          console.log('🔍 Verification after delete request:', {
+            id,
+            pendingDelete: verifyData.pendingDelete,
+            pendingApproval: verifyData.pendingApproval,
+          });
+          
+          if (!verifyData.pendingDelete || !verifyData.pendingApproval) {
+            console.error('❌ CRITICAL: Delete request failed!', verifyData);
+            // Force it back
+            await updateDoc(docRef, {
+              pendingDelete: true,
+              pendingApproval: true,
+            });
+            console.log('✅ Forced delete request flags back to true');
+          }
+        }
+        
         return;
       }
       
       // Admin can delete directly
       await deleteDoc(docRef);
-      console.log('✅ Listing deleted:', id);
+      console.log('✅ Listing deleted by admin:', id);
     } catch (error: any) {
       console.error('❌ Delete listing error:', error);
       throw new Error(error.message || 'Failed to delete listing');
