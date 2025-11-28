@@ -7,43 +7,29 @@ service firebase.storage {
       return request.auth != null;
     }
     
-    // Helper function to check if user is admin
-    function isAdmin() {
+    // Helper function to check if user is admin or agent
+    function isAdminOrAgent() {
       return isAuthenticated() && 
-             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+             (firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+              firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'agent');
     }
     
-    // Helper function to check if user owns the profile
-    function isProfileOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    // Listing images - admins and agents can upload
+    match /listings/{listingId}/{allPaths=**} {
+      allow read: if true; // Anyone can read listing images
+      allow write: if isAdminOrAgent(); // Admins and agents can upload listing images
     }
     
-    // Profile images - users can upload their own profile images
-    match /profiles/{userId}/{fileName} {
-      // Anyone authenticated can read (view) profile images
-      allow read: if isAuthenticated();
-      
-      // Users can upload/update their own profile images
-      allow write: if isProfileOwner(userId) &&
-                     request.resource.size < 5 * 1024 * 1024 && // Max 5MB for profile images
-                     request.resource.contentType.matches('image/.*'); // Only images
-      
-      // Users can delete their own profile images
-      allow delete: if isProfileOwner(userId);
+    // Project images - admins and agents can upload
+    match /projects/{projectId}/{allPaths=**} {
+      allow read: if true; // Anyone can read project images
+      allow write: if isAdminOrAgent(); // Admins and agents can upload project images
     }
     
-    // Listing images - only admins can upload
-    match /listings/{listingId}/{fileName} {
-      // Anyone authenticated can read (view) listing images
-      allow read: if isAuthenticated();
-      
-      // Only admins can upload listing images
-      allow write: if isAdmin() &&
-                     request.resource.size < 10 * 1024 * 1024 && // Max 10MB
-                     request.resource.contentType.matches('image/.*'); // Only images
-      
-      // Only admins can delete listing images
-      allow delete: if isAdmin();
+    // Profile images - users can only upload their own profile image
+    match /profiles/{userId}/{allPaths=**} {
+      allow read: if true; // Anyone can read profile images
+      allow write: if isAuthenticated() && request.auth.uid == userId; // Users can only upload their own profile image
     }
     
     // Deny all other storage access
@@ -52,4 +38,3 @@ service firebase.storage {
     }
   }
 }
-
