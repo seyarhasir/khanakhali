@@ -56,14 +56,19 @@ const convertTimestamp = (timestamp: any): Date | null => {
   return null;
 };
 
-// Remove undefined values from object (Firestore doesn't accept undefined)
+// Remove undefined values from object recursively (Firestore doesn't accept undefined)
 const removeUndefined = (obj: any): any => {
   if (obj === null || obj === undefined) {
     return null;
   }
   
+  // Don't process Date objects or Firestore Timestamps
+  if (obj instanceof Date || obj?.toDate || obj?.seconds) {
+    return obj;
+  }
+  
   if (Array.isArray(obj)) {
-    return obj.map(removeUndefined);
+    return obj.map(removeUndefined).filter(item => item !== undefined);
   }
   
   if (typeof obj === 'object') {
@@ -72,7 +77,18 @@ const removeUndefined = (obj: any): any => {
       if (obj.hasOwnProperty(key)) {
         const value = obj[key];
         if (value !== undefined) {
-          cleaned[key] = removeUndefined(value);
+          // Recursively clean nested objects
+          if (value !== null && typeof value === 'object' && !(value instanceof Date) && !value?.toDate && !value?.seconds) {
+            const cleanedValue = removeUndefined(value);
+            // Only add if the cleaned object is not empty
+            if (cleanedValue !== null && (Array.isArray(cleanedValue) || Object.keys(cleanedValue).length > 0)) {
+              cleaned[key] = cleanedValue;
+            } else if (!Array.isArray(cleanedValue) && typeof cleanedValue !== 'object') {
+              cleaned[key] = cleanedValue;
+            }
+          } else {
+            cleaned[key] = value;
+          }
         }
       }
     }
