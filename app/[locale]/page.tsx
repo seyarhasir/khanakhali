@@ -212,12 +212,17 @@ function HomePageContent() {
     }
     
     // Otherwise, read from URL query params
-    const propertyType = searchParams.get('propertyType') as 'rent' | 'sale' | 'pledge' | null;
+    const propertyType = searchParams.get('propertyType');
     const district = searchParams.get('district');
     const category = searchParams.get('category') as 'all' | 'house' | 'apartment' | 'land' | 'shop' | null;
     
-    if (propertyType && ['rent', 'sale', 'pledge'].includes(propertyType)) {
-      setSelectedPropertyType(propertyType);
+    // Map legacy 'pledge' to 'bai-wafa' and validate property type
+    if (propertyType) {
+      if (propertyType === 'pledge') {
+        setSelectedPropertyType('bai-wafa');
+      } else if (['rent', 'sale', 'bai-wafa', 'sharik-abad'].includes(propertyType)) {
+        setSelectedPropertyType(propertyType as 'rent' | 'sale' | 'bai-wafa' | 'sharik-abad');
+      }
     }
     if (district) {
       setSelectedDistrict(district);
@@ -236,10 +241,13 @@ function HomePageContent() {
     const district = searchParams.get('district');
     const category = searchParams.get('category') as 'all' | 'house' | 'apartment' | 'land' | 'shop' | null;
     
-    // Only update if different to prevent loops
-    if (propertyType && ['rent', 'sale', 'pledge'].includes(propertyType)) {
-      if (selectedPropertyType !== propertyType) {
-        setSelectedPropertyType(propertyType);
+    // Only update if different to prevent loops (map legacy 'pledge' to 'bai-wafa')
+    if (propertyType) {
+      const mappedType = propertyType === 'pledge' ? 'bai-wafa' : propertyType;
+      if (['rent', 'sale', 'bai-wafa', 'sharik-abad'].includes(mappedType)) {
+        if (selectedPropertyType !== mappedType) {
+          setSelectedPropertyType(mappedType as 'rent' | 'sale' | 'bai-wafa' | 'sharik-abad');
+        }
       }
     } else if (!propertyType && selectedPropertyType !== null) {
       setSelectedPropertyType(null);
