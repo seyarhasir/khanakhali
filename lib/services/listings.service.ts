@@ -314,10 +314,16 @@ export const listingsService = {
         // First fetch the original listing
         const originalListing = await listingsService.fetchListingById(id);
         
+        if (!originalListing) {
+          throw new Error('Listing not found');
+        }
+        
         // Clean the original listing data to remove undefined values
         const cleanedOriginalData = removeUndefined(originalListing);
         
         const updateData: any = {
+          // CRITICAL: Explicitly set status to 'pending' to prevent it from going active
+          status: 'pending',
           pendingApproval: true,
           originalData: cleanedOriginalData, // Store cleaned original data for admin review
           updatedAt: serverTimestamp(),
@@ -333,18 +339,37 @@ export const listingsService = {
         updateData.pendingChanges = cleanedPendingChanges;
         
         await updateDoc(docRef, updateData);
-        console.log('✅ Listing update pending approval:', id);
+        console.log('✅ Listing update pending approval (status: pending):', id);
         return;
       }
       
-      // Admin can update directly
+      // Admin can update directly - but preserve pending status for agent listings
+      // First check if this is a pending agent listing
+      const currentListing = await listingsService.fetchListingById(id);
+      
+      if (!currentListing) {
+        throw new Error('Listing not found');
+      }
+      
       const updateData: any = {
         ...data,
         updatedAt: serverTimestamp(),
-        pendingApproval: false,
-        pendingChanges: null,
-        originalData: null,
       };
+      
+      // CRITICAL: If this is a pending agent listing, preserve pending status
+      // Admin should only change status when explicitly approving via approveNewListing
+      if (currentListing.pendingApproval && currentListing.status === 'pending') {
+        // Preserve pending status - admin is just adding images or minor updates
+        // Don't activate until explicitly approved
+        updateData.status = 'pending';
+        updateData.pendingApproval = true;
+        console.log('⚠️ Preserving pending status for agent listing:', id);
+      } else {
+        // Normal admin update - clear pending flags
+        updateData.pendingApproval = false;
+        updateData.pendingChanges = null;
+        updateData.originalData = null;
+      }
       
       // Only update images if provided
       if (images !== undefined) {
@@ -360,7 +385,7 @@ export const listingsService = {
       const cleanedData = removeUndefined(updateData);
       
       await updateDoc(docRef, cleanedData);
-      console.log('✅ Listing updated:', id);
+      console.log('✅ Listing updated:', id, 'Status:', updateData.status);
     } catch (error: any) {
       console.error('❌ Update listing error:', error);
       throw new Error(error.message || 'Failed to update listing');

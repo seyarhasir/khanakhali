@@ -6,6 +6,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/lib/store/authStore';
 import { listingsService } from '@/lib/services/listings.service';
 import { storageService } from '@/lib/services/storage.service';
+import { getDbInstance } from '@/lib/firebase/config';
+import { doc, updateDoc } from 'firebase/firestore';
 import { CreateListingInput, PropertyType, PropertyCategory } from '@/lib/types/listing.types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -120,8 +122,36 @@ export default function NewListingPage() {
         
         const imageUrls = await storageService.uploadListingImages(reorderedImages, listing.id);
         console.log('✅ Images uploaded:', imageUrls.length);
-        // Update listing with image URLs - use actual user role to maintain pending status for agents
-        await listingsService.updateListing(listing.id, { id: listing.id }, user.role || 'user', imageUrls);
+        // CRITICAL: Use actual user role to maintain pending status for agents
+        // Don't pass status in data - let updateListing handle it based on role
+        await listingsService.updateListing(
+          listing.id, 
+          { id: listing.id }, // Don't include status - let updateListing preserve it
+          user.role || 'user', 
+          imageUrls
+        );
+        
+        // Verify the listing is still pending after update
+        const verifyListing = await listingsService.fetchListingById(listing.id);
+        if (user.role === 'agent' && verifyListing) {
+          console.log('🔍 Verification - Listing status after update:', {
+            id: listing.id,
+            status: verifyListing.status,
+            pendingApproval: verifyListing.pendingApproval,
+          });
+          
+          if (verifyListing.status !== 'pending' || !verifyListing.pendingApproval) {
+            console.error('❌ CRITICAL: Listing status changed incorrectly!', verifyListing);
+            // Force it back to pending
+            const db = getDbInstance();
+            const docRef = doc(db, 'listings', listing.id);
+            await updateDoc(docRef, {
+              status: 'pending',
+              pendingApproval: true,
+            });
+            console.log('✅ Forced listing back to pending status');
+          }
+        }
       }
       
       // Show success message for agents
