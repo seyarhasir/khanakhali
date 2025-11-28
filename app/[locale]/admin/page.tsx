@@ -178,7 +178,7 @@ export default function AdminPage() {
           <div className="bg-white rounded-2xl p-12 text-center">
             <p className="text-brand-gray text-lg mb-4">{t('admin.noProjectsYet')}</p>
             <Link href={`/${locale}/admin/projects/new`}>
-              <Button>Create First Project</Button>
+              <Button>{t('admin.createFirstProject')}</Button>
             </Link>
           </div>
         ) : (
@@ -197,7 +197,7 @@ export default function AdminPage() {
                 )}
                 <div className="p-4">
                   <h3 className="text-lg font-bold text-brand-slate mb-2">{project.name}</h3>
-                  <p className="text-sm text-gray-600 mb-2">Developer: {project.developer}</p>
+                  <p className="text-sm text-gray-600 mb-2">{t('projects.developedBy')} {project.developer}</p>
                   {project.priceRange && project.priceRange.min !== undefined && project.priceRange.max !== undefined && (
                     <p className="text-base font-semibold text-brand-primary mb-2">
                       {project.priceRange.min.toLocaleString()} - {project.priceRange.max.toLocaleString()} {t('common.currency')}
