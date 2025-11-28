@@ -91,11 +91,18 @@ export default function AdminPage() {
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           {user?.role === 'admin' && (
-            <Link href={`/${locale}/admin/approvals`} className="flex-1 sm:flex-none">
-              <Button variant="outline" className="w-full sm:w-auto text-sm sm:text-base border-yellow-400 text-yellow-700 hover:bg-yellow-50 whitespace-nowrap">
-                {t('admin.pendingApprovals')}
-              </Button>
-            </Link>
+            <>
+              <Link href={`/${locale}/admin/approvals`} className="flex-1 sm:flex-none">
+                <Button variant="outline" className="w-full sm:w-auto text-sm sm:text-base border-yellow-400 text-yellow-700 hover:bg-yellow-50 whitespace-nowrap">
+                  {t('admin.pendingApprovals')}
+                </Button>
+              </Link>
+              <Link href={`/${locale}/admin/users`} className="flex-1 sm:flex-none">
+                <Button variant="outline" className="w-full sm:w-auto text-sm sm:text-base whitespace-nowrap">
+                  {t('admin.manageUsers')}
+                </Button>
+              </Link>
+            </>
           )}
           {activeTab === 'listings' ? (
             <Link href={`/${locale}/admin/listings/new`} className="flex-1 sm:flex-none">
