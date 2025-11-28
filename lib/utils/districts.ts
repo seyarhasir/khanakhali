@@ -1,0 +1,26 @@
+// Kabul Districts (ناحیه) - 22 Districts
+export const kabulDistricts = [
+  { id: '1', name: 'ناحیه 1', nameEn: 'District 1' },
+  { id: '2', name: 'ناحیه 2', nameEn: 'District 2' },
+  { id: '3', name: 'ناحیه 3', nameEn: 'District 3' },
+  { id: '4', name: 'ناحیه 4', nameEn: 'District 4' },
+  { id: '5', name: 'ناحیه 5', nameEn: 'District 5' },
+  { id: '6', name: 'ناحیه 6', nameEn: 'District 6' },
+  { id: '7', name: 'ناحیه 7', nameEn: 'District 7' },
+  { id: '8', name: 'ناحیه 8', nameEn: 'District 8' },
+  { id: '9', name: 'ناحیه 9', nameEn: 'District 9' },
+  { id: '10', name: 'ناحیه 10', nameEn: 'District 10' },
+  { id: '11', name: 'ناحیه 11', nameEn: 'District 11' },
+  { id: '12', name: 'ناحیه 12', nameEn: 'District 12' },
+  { id: '13', name: 'ناحیه 13', nameEn: 'District 13' },
+  { id: '14', name: 'ناحیه 14', nameEn: 'District 14' },
+  { id: '15', name: 'ناحیه 15', nameEn: 'District 15' },
+  { id: '16', name: 'ناحیه 16', nameEn: 'District 16' },
+  { id: '17', name: 'ناحیه 17', nameEn: 'District 17' },
+  { id: '18', name: 'ناحیه 18', nameEn: 'District 18' },
+  { id: '19', name: 'ناحیه 19', nameEn: 'District 19' },
+  { id: '20', name: 'ناحیه 20', nameEn: 'District 20' },
+  { id: '21', name: 'ناحیه 21', nameEn: 'District 21' },
+  { id: '22', name: 'ناحیه 22', nameEn: 'District 22' },
+];
+

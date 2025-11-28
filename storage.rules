@@ -1,0 +1,55 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function to check if user owns the profile
+    function isProfileOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Profile images - users can upload their own profile images
+    match /profiles/{userId}/{fileName} {
+      // Anyone authenticated can read (view) profile images
+      allow read: if isAuthenticated();
+      
+      // Users can upload/update their own profile images
+      allow write: if isProfileOwner(userId) &&
+                     request.resource.size < 5 * 1024 * 1024 && // Max 5MB for profile images
+                     request.resource.contentType.matches('image/.*'); // Only images
+      
+      // Users can delete their own profile images
+      allow delete: if isProfileOwner(userId);
+    }
+    
+    // Listing images - only admins can upload
+    match /listings/{listingId}/{fileName} {
+      // Anyone authenticated can read (view) listing images
+      allow read: if isAuthenticated();
+      
+      // Only admins can upload listing images
+      allow write: if isAdmin() &&
+                     request.resource.size < 10 * 1024 * 1024 && // Max 10MB
+                     request.resource.contentType.matches('image/.*'); // Only images
+      
+      // Only admins can delete listing images
+      allow delete: if isAdmin();
+    }
+    
+    // Deny all other storage access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

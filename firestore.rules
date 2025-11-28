@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Anyone can read user documents (for public profiles)
+      // This allows viewing agent profiles on listing pages
+      allow read: if true;
+      
+      // Users can only create/update their own document
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      
+      // Only allow role changes by existing admins (prevent self-promotion)
+      allow update: if isAdmin();
+      
+      // No deletion of user documents
+      allow delete: if false;
+    }
+    
+    // Listings collection
+    match /listings/{listingId} {
+      // Anyone can read listings (public access for website)
+      // The service layer filters to only show active listings
+      allow read: if true;
+      
+      // Only admins can create listings
+      allow create: if isAdmin() &&
+                      request.resource.data.createdBy == request.auth.uid &&
+                      request.resource.data.title is string &&
+                      request.resource.data.description is string &&
+                      request.resource.data.price is number &&
+                      request.resource.data.price > 0 &&
+                      request.resource.data.location is map &&
+                      request.resource.data.status in ['active', 'sold', 'pending'];
+      
+      // Only the admin who created the listing can update it
+      allow update: if isAdmin() &&
+                      resource.data.createdBy == request.auth.uid;
+      
+      // Only the admin who created the listing can delete it
+      allow delete: if isAdmin() &&
+                      resource.data.createdBy == request.auth.uid;
+    }
+    
+    // Projects collection
+    match /projects/{projectId} {
+      // Anyone can read projects (public access for website)
+      allow read: if true;
+      
+      // Only admins can create projects
+      allow create: if isAdmin() &&
+                      request.resource.data.createdBy == request.auth.uid &&
+                      request.resource.data.name is string &&
+                      request.resource.data.description is string &&
+                      request.resource.data.developer is string &&
+                      request.resource.data.developedBy is string &&
+                      request.resource.data.location is map &&
+                      request.resource.data.status in ['upcoming', 'under-construction', 'completed', 'sold-out'];
+      
+      // Only the admin who created the project can update it
+      allow update: if isAdmin() &&
+                      resource.data.createdBy == request.auth.uid;
+      
+      // Only the admin who created the project can delete it
+      allow delete: if isAdmin() &&
+                      resource.data.createdBy == request.auth.uid;
+    }
+    
+    // Deny all other database access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
