@@ -16,7 +16,7 @@ export default function AdminUsersPage() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  const { user, isAuthenticated, authLoading } = useAuthStore();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const toast = useToast();
   const { confirm } = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
