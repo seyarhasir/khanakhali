@@ -148,9 +148,9 @@ export default function AdminPage() {
                     className="text-sm sm:text-base py-2 sm:py-3"
                     onClick={async () => {
                       const confirmed = await confirm({
-                        title: 'Delete Listing',
-                        message: 'Are you sure you want to delete this listing? This action cannot be undone.',
-                        confirmText: 'Delete',
+                        title: t('admin.deleteListing'),
+                        message: t('admin.deleteListingConfirm'),
+                        confirmText: t('common.delete'),
                         type: 'danger',
                       });
                       
@@ -213,9 +213,9 @@ export default function AdminPage() {
                       className="text-sm py-2"
                       onClick={async () => {
                         const confirmed = await confirm({
-                          title: 'Delete Project',
-                          message: 'Are you sure you want to delete this project? This action cannot be undone.',
-                          confirmText: 'Delete',
+                          title: t('admin.deleteProject'),
+                          message: t('admin.deleteProjectConfirm'),
+                          confirmText: t('common.delete'),
                           type: 'danger',
                         });
                         
