@@ -89,12 +89,21 @@ export default function NewListingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm() || !user || isLoading) return; // Prevent double submission
+    
+    // Critical: Prevent double submission
+    if (!validateForm() || !user) return;
+    if (isLoading) {
+      console.log('⚠️ Already submitting, ignoring duplicate submission');
+      return;
+    }
 
     setIsLoading(true);
+    console.log('✅ Starting submission for user role:', user.role);
+    
     try {
       // Create listing first
       const listing = await listingsService.createListing(formData, user.uid, user.role || 'user', []);
+      console.log('✅ Listing created:', listing.id, 'Status:', listing.status);
       
       // Upload images (reorder so cover image is first)
       if (images.length > 0) {
@@ -107,6 +116,7 @@ export default function NewListingPage() {
         }
         
         const imageUrls = await storageService.uploadListingImages(reorderedImages, listing.id);
+        console.log('✅ Images uploaded:', imageUrls.length);
         // Update listing with image URLs (use admin role to avoid creating second approval)
         await listingsService.updateListing(listing.id, { id: listing.id }, 'admin', imageUrls);
       }
@@ -118,8 +128,11 @@ export default function NewListingPage() {
         toast.success('Listing created successfully!');
       }
       
+      // Small delay before navigation to prevent double-click issues
+      await new Promise(resolve => setTimeout(resolve, 300));
       router.push(`/${locale}/admin`);
     } catch (error: any) {
+      console.error('❌ Submission error:', error);
       toast.error(error.message || t('admin.errors.createFailed'));
       setIsLoading(false); // Re-enable button only on error
     }
