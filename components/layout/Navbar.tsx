@@ -110,7 +110,7 @@ export const Navbar: React.FC = () => {
                     href={`/${locale}/agent`}
                     className="text-sm lg:text-base text-white hover:text-brand-secondary transition-colors font-medium"
                   >
-                    {t('nav.agentDashboard') || 'Agent Dashboard'}
+                    {t('nav.agentDashboard')}
                   </Link>
                 )}
                 <Link

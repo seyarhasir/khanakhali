@@ -91,7 +91,7 @@ export default function AgentPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-brand-slate mb-2">{t('admin.agentDashboard') || 'Agent Dashboard'}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-brand-slate mb-2">{t('admin.agentDashboard')}</h1>
           <p className="text-sm sm:text-base text-brand-gray">{t('admin.manageListings')}</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">

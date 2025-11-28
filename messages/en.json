@@ -23,6 +23,7 @@
   "nav": {
     "adminLogin": "Admin Login",
     "dashboard": "Dashboard",
+    "agentDashboard": "Agent Dashboard",
     "savedHomes": "Saved Homes",
     "profile": "Profile"
   },
@@ -177,6 +178,7 @@
     "editListing": "Edit Listing",
     "editListingSubtitle": "Update property listing information",
     "adminDashboard": "Admin Dashboard",
+    "agentDashboard": "Agent Dashboard",
     "manageListings": "Manage listings and projects",
     "addNewListing": "Add New Listing",
     "addNewProject": "Add New Project",
