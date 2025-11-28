@@ -20,6 +20,14 @@ const convertFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> =>
   
   if (userDoc.exists()) {
     const data = userDoc.data();
+    console.log('🔍 User data from Firestore:', {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      role: data.role,
+      hasRoleField: 'role' in data,
+      allFields: Object.keys(data),
+    });
+    
     return {
       uid: firebaseUser.uid,
       email: firebaseUser.email || '',
@@ -37,6 +45,7 @@ const convertFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> =>
     };
   }
 
+  console.warn('⚠️ User document does not exist in Firestore for:', firebaseUser.uid);
   // Fallback if user doc doesn't exist
   return {
     uid: firebaseUser.uid,
