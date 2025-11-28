@@ -175,9 +175,13 @@ function HomePageContent() {
       const district = params.get('district');
       const category = params.get('category') as 'all' | 'house' | 'apartment' | 'land' | 'shop' | null;
       
-      // Update state
-      if (propertyType && ['rent', 'sale', 'pledge'].includes(propertyType)) {
-        setSelectedPropertyType(propertyType);
+      // Update state (map legacy 'pledge' to 'bai-wafa')
+      if (propertyType) {
+        if (propertyType === 'pledge') {
+          setSelectedPropertyType('bai-wafa');
+        } else if (['rent', 'sale', 'bai-wafa', 'sharik-abad'].includes(propertyType)) {
+          setSelectedPropertyType(propertyType as 'rent' | 'sale' | 'bai-wafa' | 'sharik-abad');
+        }
       }
       if (district) {
         setSelectedDistrict(district);
