@@ -76,7 +76,7 @@
     "fullName": "Full Name",
     "forgotPassword": "Forgot password?",
     "dontHaveAccount": "Don't have an account?",
-    "alreadyHaveAccount": "Already have an account?",
+    "alreadyHaveAccount": "ALREADY HAVE AN ACCOUNT?",
     "signingIn": "Signing in...",
     "creatingAccount": "Creating account...",
     "backToHome": "Back to home",
@@ -90,8 +90,7 @@
     "continueWithGoogle": "Continue with Google",
     "or": "OR",
     "rememberMe": "Remember Me",
-    "areYouNew": "ARE YOU NEW TO MANZIL?",
-    "alreadyHaveAccount": "ALREADY HAVE AN ACCOUNT?"
+    "areYouNew": "ARE YOU NEW TO MANZIL?"
   },
   "forgotPassword": {
     "title": "Forgot Password?",
@@ -336,7 +335,19 @@
       "facilitiesForDisabled": "Facilities for Disabled",
       "otherFacilitiesInput": "Other Facilities",
       "otherFacilitiesPlaceholder": "Any other facilities or features"
-    }
+    },
+    "reviewAgentActions": "Review and approve agent actions",
+    "newListingsEdits": "New Listings & Edits",
+    "editPending": "Edit Pending",
+    "newListingPending": "New Listing Pending",
+    "approve": "Approve",
+    "reject": "Reject",
+    "deleteRequests": "Delete Requests",
+    "deleteRequest": "Delete Request",
+    "approveDelete": "Approve Delete",
+    "keepListing": "Keep Listing",
+    "allCaughtUp": "All Caught Up!",
+    "noPendingApprovals": "No pending approvals at the moment"
   },
   "favorites": {
     "title": "Saved Homes",
@@ -424,4 +435,3 @@
     "copyright": "© 2025 Manzil. All rights reserved."
   }
 }
-

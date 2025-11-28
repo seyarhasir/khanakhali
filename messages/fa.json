@@ -90,8 +90,7 @@
     "continueWithGoogle": "ادامه با گوگل",
     "or": "یا",
     "rememberMe": "مرا به خاطر بسپار",
-    "areYouNew": "آیا تازه وارد منزل هستید؟",
-    "alreadyHaveAccount": "قبلاً حساب کاربری دارید؟"
+    "areYouNew": "آیا تازه وارد منزل هستید؟"
   },
   "forgotPassword": {
     "title": "رمز عبور را فراموش کرده‌اید؟",
@@ -152,8 +151,7 @@
     "hot": "داغ",
     "verified": "تأیید شده",
     "premium": "پریمیوم",
-    "added": "افزوده شده",
-    "call": "تماس"
+    "added": "افزوده شده"
   },
   "projects": {
     "back": "بازگشت",
@@ -337,7 +335,19 @@
       "facilitiesForDisabled": "امکانات برای معلولین",
       "otherFacilitiesInput": "امکانات دیگر",
       "otherFacilitiesPlaceholder": "هر امکانات یا ویژگی دیگر"
-    }
+    },
+    "reviewAgentActions": "بررسی و تایید اقدامات نماینده",
+    "newListingsEdits": "لیست‌های جدید و ویرایش‌ها",
+    "editPending": "ویرایش در انتظار",
+    "newListingPending": "لیست جدید در انتظار",
+    "approve": "تایید",
+    "reject": "رد",
+    "deleteRequests": "درخواست‌های حذف",
+    "deleteRequest": "درخواست حذف",
+    "approveDelete": "تایید حذف",
+    "keepListing": "نگه داشتن لیست",
+    "allCaughtUp": "همه انجام شد!",
+    "noPendingApprovals": "در حال حاضر تاییدیه‌ای در انتظار نیست"
   },
   "favorites": {
     "title": "خانه‌های ذخیره شده",
@@ -425,4 +435,3 @@
     "copyright": "© 2025 Manzil. تمامی حقوق محفوظ است."
   }
 }
-
