@@ -893,20 +893,57 @@ export const listingsService = {
   fetchPendingDeletes: async (): Promise<Listing[]> => {
     try {
       const db = getDb();
-      const q = query(
-        collection(db, 'listings'),
-        where('pendingDelete', '==', true),
-        orderBy('updatedAt', 'desc')
-      );
       
-      const querySnapshot = await getDocs(q);
+      // Try composite index query first (pendingDelete + updatedAt)
+      let querySnapshot;
+      try {
+        const q = query(
+          collection(db, 'listings'),
+          where('pendingDelete', '==', true),
+          orderBy('updatedAt', 'desc')
+        );
+        querySnapshot = await getDocs(q);
+        console.log('✅ Used composite index query for pending deletes');
+      } catch (indexError: any) {
+        // If composite index doesn't exist, fall back to simple query
+        console.warn('⚠️ Composite index not found, using fallback query:', indexError.message);
+        const fallbackQuery = query(
+          collection(db, 'listings'),
+          where('pendingDelete', '==', true)
+        );
+        querySnapshot = await getDocs(fallbackQuery);
+        console.log('✅ Used fallback query (no orderBy) for pending deletes');
+      }
+      
       const listings: Listing[] = [];
       
       querySnapshot.forEach((doc) => {
-        listings.push(convertDocToListing(doc));
+        const listing = convertDocToListing(doc);
+        
+        // CRITICAL: Verify pendingDelete is actually true (handle type mismatches)
+        const data = doc.data();
+        const pendingDelete = data.pendingDelete === true || data.pendingDelete === 'true';
+        
+        if (pendingDelete) {
+          listings.push(listing);
+        } else {
+          console.log('🚫 Excluded from pending deletes (pendingDelete not true):', listing.id, {
+            pendingDelete: data.pendingDelete,
+            pendingDeleteType: typeof data.pendingDelete,
+          });
+        }
       });
       
-      console.log(`✅ Fetched ${listings.length} pending deletes`);
+      // Sort manually if we used fallback query (no orderBy)
+      if (listings.length > 0 && listings[0].updatedAt) {
+        listings.sort((a, b) => {
+          const aTime = a.updatedAt?.getTime() || 0;
+          const bTime = b.updatedAt?.getTime() || 0;
+          return bTime - aTime; // Descending order
+        });
+      }
+      
+      console.log(`✅ Fetched ${listings.length} pending deletes (from ${querySnapshot.size} total matches)`);
       return listings;
     } catch (error: any) {
       console.error('❌ Fetch pending deletes error:', error);
