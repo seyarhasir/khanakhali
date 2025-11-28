@@ -28,12 +28,12 @@ export default function NewListingPage() {
     // Wait for auth to finish loading before checking
     if (authLoading) return;
 
-    // CRITICAL: Only allow admins, redirect agents to agent pages
+    // CRITICAL: Only allow agents, redirect admins to admin pages
     if (!isAuthenticated) {
       router.push(`/${locale}/login`);
-    } else if (user?.role !== 'admin') {
-      if (user?.role === 'agent') {
-        router.push(`/${locale}/agent/listings/new`);
+    } else if (user?.role !== 'agent') {
+      if (user?.role === 'admin') {
+        router.push(`/${locale}/admin/listings/new`);
       } else {
         router.push(`/${locale}`);
       }
@@ -77,7 +77,7 @@ export default function NewListingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated || user?.role !== 'agent') {
     return null;
   }
 
@@ -201,7 +201,7 @@ export default function NewListingPage() {
       
       // Small delay before navigation to prevent double-click issues
       await new Promise(resolve => setTimeout(resolve, 300));
-      router.push(`/${locale}/admin`);
+      router.push(`/${locale}/agent`);
     } catch (error: any) {
       console.error('❌ Submission error:', error);
       toast.error(error.message || t('admin.errors.createFailed'));

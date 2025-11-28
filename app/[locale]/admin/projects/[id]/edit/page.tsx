@@ -27,8 +27,15 @@ export default function EditProjectPage() {
     // Wait for auth to finish loading before checking
     if (authLoading) return;
 
-    if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
+    // CRITICAL: Only allow admins, redirect agents to agent pages
+    if (!isAuthenticated) {
       router.push(`/${locale}/login`);
+    } else if (user?.role !== 'admin') {
+      if (user?.role === 'agent') {
+        router.push(`/${locale}/agent/projects/${params.id}/edit`);
+      } else {
+        router.push(`/${locale}`);
+      }
     }
   }, [user, isAuthenticated, authLoading, router, locale]);
 
@@ -71,7 +78,7 @@ export default function EditProjectPage() {
 
   useEffect(() => {
     const fetchProject = async () => {
-      if (!params.id || !isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) return;
+      if (!params.id || !isAuthenticated || user?.role !== 'admin') return;
 
       try {
         const id = params.id as string;
@@ -118,7 +125,7 @@ export default function EditProjectPage() {
     fetchProject();
   }, [params.id, isAuthenticated, user, router, locale]);
 
-  if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
+  if (!isAuthenticated || user?.role !== 'admin') {
     return null;
   }
 

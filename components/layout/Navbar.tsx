@@ -97,12 +97,20 @@ export const Navbar: React.FC = () => {
             
             {isAuthenticated ? (
               <>
-                {(user?.role === 'admin' || user?.role === 'agent') && (
+                {user?.role === 'admin' && (
                   <Link
                     href={`/${locale}/admin`}
                     className="text-sm lg:text-base text-white hover:text-brand-secondary transition-colors font-medium"
                   >
                     {t('nav.dashboard')}
+                  </Link>
+                )}
+                {user?.role === 'agent' && (
+                  <Link
+                    href={`/${locale}/agent`}
+                    className="text-sm lg:text-base text-white hover:text-brand-secondary transition-colors font-medium"
+                  >
+                    {t('nav.agentDashboard') || 'Agent Dashboard'}
                   </Link>
                 )}
                 <Link
