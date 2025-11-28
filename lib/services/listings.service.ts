@@ -164,22 +164,32 @@ export const listingsService = {
       
       querySnapshot.forEach((doc) => {
         const listing = convertDocToListing(doc);
+        const data = doc.data();
+        
+        // CRITICAL: Check raw data values, not converted values
+        // Handle both boolean and string types for pendingApproval/pendingDelete
+        const pendingApproval = data.pendingApproval === true || data.pendingApproval === 'true';
+        const pendingDelete = data.pendingDelete === true || data.pendingDelete === 'true';
+        
         // CRITICAL: Multiple layers of protection to exclude pending listings
         // Only include listings that are:
         // 1. Status MUST be 'active' (query already filters this, but double-check)
-        // 2. NOT pending approval (agent submissions)
+        // 2. NOT pending approval (agent submissions) - CRITICAL: Even if status is 'active', exclude if pendingApproval is true
         // 3. NOT pending deletion
         if (
           listing.status === 'active' && 
-          !listing.pendingApproval && 
-          !listing.pendingDelete
+          !pendingApproval && 
+          !pendingDelete
         ) {
           listings.push(listing);
         } else {
-          console.log('🚫 Excluded listing:', listing.id, {
+          console.log('🚫 Excluded listing from public view:', listing.id, {
             status: listing.status,
-            pendingApproval: listing.pendingApproval,
-            pendingDelete: listing.pendingDelete,
+            dataStatus: data.status,
+            pendingApproval: data.pendingApproval,
+            pendingApprovalType: typeof data.pendingApproval,
+            pendingDelete: data.pendingDelete,
+            pendingDeleteType: typeof data.pendingDelete,
           });
         }
       });
