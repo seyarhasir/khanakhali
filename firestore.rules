@@ -20,6 +20,12 @@ service cloud.firestore {
               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'agent');
     }
     
+    // Helper function to check if user is agent (not admin)
+    function isAgent() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'agent';
+    }
+    
     // Helper function to check if user owns the document
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
@@ -48,7 +54,7 @@ service cloud.firestore {
       // The service layer filters to only show active listings
       allow read: if true;
       
-      // Admins and agents can create listings
+      // CRITICAL: Admins and agents can create listings, but agents MUST have status='pending' and pendingApproval=true
       allow create: if isAdminOrAgent() &&
                       request.resource.data.createdBy == request.auth.uid &&
                       request.resource.data.title is string &&
@@ -56,11 +62,24 @@ service cloud.firestore {
                       request.resource.data.price is number &&
                       request.resource.data.price > 0 &&
                       request.resource.data.location is map &&
-                      request.resource.data.status in ['active', 'sold', 'pending', 'rented', 'pledged'];
+                      // If agent, force status='pending' and pendingApproval=true
+                      ((isAgent() && 
+                        request.resource.data.status == 'pending' &&
+                        request.resource.data.pendingApproval == true) ||
+                       // If admin, allow any valid status
+                       (!isAgent() && 
+                        request.resource.data.status in ['active', 'sold', 'pending', 'rented', 'pledged']));
       
-      // Admin and agent who created the listing can update it
+      // CRITICAL: Admin and agent can update, but agents CANNOT change status to 'active' or remove pendingApproval
       allow update: if isAdminOrAgent() &&
-                      resource.data.createdBy == request.auth.uid;
+                      resource.data.createdBy == request.auth.uid &&
+                      // If agent is updating, enforce restrictions
+                      (!isAgent() || 
+                       // Agent cannot change status from 'pending' to 'active'
+                       (request.resource.data.status == 'pending' || 
+                        request.resource.data.status == resource.data.status) &&
+                       // Agent cannot remove pendingApproval (must be true)
+                       request.resource.data.pendingApproval == true);
       
       // Admin and agent who created the listing can delete it (or mark for deletion)
       allow delete: if isAdminOrAgent() &&
