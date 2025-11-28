@@ -7,7 +7,7 @@ import { useAuthStore } from '@/lib/store/authStore';
 import { listingsService } from '@/lib/services/listings.service';
 import { storageService } from '@/lib/services/storage.service';
 import { getDbInstance } from '@/lib/firebase/config';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { CreateListingInput, PropertyType, PropertyCategory } from '@/lib/types/listing.types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -106,12 +106,12 @@ export default function NewListingPage() {
     console.log('✅ Starting submission for user role:', user.role);
     
     try {
-      // Create listing first
-      const listing = await listingsService.createListing(formData, user.uid, user.role || 'user', []);
-      console.log('✅ Listing created:', listing.id, 'Status:', listing.status);
+      // CRITICAL: For agents, upload images FIRST, then create listing with image URLs
+      // This avoids the race condition of create → update
+      let imageUrls: string[] = [];
       
-      // Upload images (reorder so cover image is first)
-      if (images.length > 0) {
+      if (images.length > 0 && user.role === 'agent') {
+        // For agents: Upload images first, then create listing with URLs
         // Reorder images: move cover image to first position
         const reorderedImages = [...images];
         if (coverImageIndex > 0 && coverImageIndex < reorderedImages.length) {
@@ -120,36 +120,67 @@ export default function NewListingPage() {
           reorderedImages.unshift(coverImage);
         }
         
-        const imageUrls = await storageService.uploadListingImages(reorderedImages, listing.id);
-        console.log('✅ Images uploaded:', imageUrls.length);
-        // CRITICAL: Use actual user role to maintain pending status for agents
-        // Don't pass status in data - let updateListing handle it based on role
+        // Create a temporary listing ID for image upload
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        imageUrls = await storageService.uploadListingImages(reorderedImages, tempId);
+        console.log('✅ Images uploaded for agent (before listing creation):', imageUrls.length);
+      }
+      
+      // Create listing with images (if agent) or empty array (will update after for admin)
+      const listing = await listingsService.createListing(
+        formData, 
+        user.uid, 
+        user.role || 'user', 
+        user.role === 'agent' ? imageUrls : [] // Include images for agents
+      );
+      console.log('✅ Listing created:', listing.id, 'Status:', listing.status, 'Pending:', listing.pendingApproval);
+      
+      // For admins: Upload images after creation and update
+      if (images.length > 0 && user.role !== 'agent') {
+        // Reorder images: move cover image to first position
+        const reorderedImages = [...images];
+        if (coverImageIndex > 0 && coverImageIndex < reorderedImages.length) {
+          const coverImage = reorderedImages[coverImageIndex];
+          reorderedImages.splice(coverImageIndex, 1);
+          reorderedImages.unshift(coverImage);
+        }
+        
+        const uploadedUrls = await storageService.uploadListingImages(reorderedImages, listing.id);
+        console.log('✅ Images uploaded for admin:', uploadedUrls.length);
+        // Admin can update directly - no approval needed
         await listingsService.updateListing(
           listing.id, 
-          { id: listing.id }, // Don't include status - let updateListing preserve it
+          { id: listing.id },
           user.role || 'user', 
-          imageUrls
+          uploadedUrls
         );
+      }
+      
+      // CRITICAL: Final verification for agents
+      if (user.role === 'agent') {
+        // Wait a bit for Firestore to sync
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // Verify the listing is still pending after update
         const verifyListing = await listingsService.fetchListingById(listing.id);
-        if (user.role === 'agent' && verifyListing) {
-          console.log('🔍 Verification - Listing status after update:', {
+        if (verifyListing) {
+          console.log('🔍 Final verification - Listing status:', {
             id: listing.id,
             status: verifyListing.status,
             pendingApproval: verifyListing.pendingApproval,
+            pendingApprovalType: typeof verifyListing.pendingApproval,
           });
           
-          if (verifyListing.status !== 'pending' || !verifyListing.pendingApproval) {
-            console.error('❌ CRITICAL: Listing status changed incorrectly!', verifyListing);
-            // Force it back to pending
+          if (verifyListing.status !== 'pending' || verifyListing.pendingApproval !== true) {
+            console.error('❌ CRITICAL: Listing status incorrect after creation!', verifyListing);
+            // Force correction
             const db = getDbInstance();
             const docRef = doc(db, 'listings', listing.id);
             await updateDoc(docRef, {
               status: 'pending',
               pendingApproval: true,
+              updatedAt: serverTimestamp(),
             });
-            console.log('✅ Forced listing back to pending status');
+            console.log('✅ Forced listing to correct pending state');
           }
         }
       }

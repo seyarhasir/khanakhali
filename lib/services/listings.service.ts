@@ -301,36 +301,74 @@ export const listingsService = {
       // CRITICAL: Remove status from data if it exists, to prevent override
       const { status: _, ...dataWithoutStatus } = data;
       
+      // CRITICAL: Ensure updatedAt is always set (required for orderBy queries)
+      const now = serverTimestamp();
+      
       const listingData = {
         ...dataWithoutStatus, // Don't include status from data
         propertyId,
-        imageUrls: images,
+        imageUrls: images, // Include images directly in creation
         createdBy: userId,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+        createdAt: now,
+        updatedAt: now, // CRITICAL: Always set updatedAt for orderBy queries
         // CRITICAL: Explicitly set status AFTER spreading data
         status: finalStatus,
-        // CRITICAL: Explicitly set pendingApproval
-        pendingApproval: finalPendingApproval,
+        // CRITICAL: Explicitly set pendingApproval as boolean true (not string)
+        pendingApproval: finalPendingApproval === true, // Ensure boolean type
       };
       
       // Remove all undefined values (Firestore doesn't accept undefined)
       const cleanedData = removeUndefined(listingData);
       
+      // CRITICAL: Double-check pendingApproval is boolean true, not undefined
+      if (isAgent) {
+        cleanedData.pendingApproval = true; // Force boolean true
+      }
+      
       console.log('🔍 Final listing data before save:', {
         status: cleanedData.status,
         pendingApproval: cleanedData.pendingApproval,
+        pendingApprovalType: typeof cleanedData.pendingApproval,
         createdBy: cleanedData.createdBy,
+        hasUpdatedAt: !!cleanedData.updatedAt,
       });
       
       const db = getDb();
       const docRef = await addDoc(collection(db, 'listings'), cleanedData);
       console.log(`✅ Listing created${isAgent ? ' (pending approval)' : ''}:`, docRef.id, 'Status:', finalStatus);
       
+      // CRITICAL: Wait a bit for Firestore to commit (helps with eventual consistency)
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Fetch the created listing to return it with timestamps
       const listing = await listingsService.fetchListingById(docRef.id);
       if (!listing) {
         throw new Error('Failed to fetch created listing');
+      }
+      
+      // CRITICAL: Verify the listing was created correctly
+      if (isAgent) {
+        console.log('🔍 Verification after create:', {
+          id: listing.id,
+          status: listing.status,
+          pendingApproval: listing.pendingApproval,
+          pendingApprovalType: typeof listing.pendingApproval,
+        });
+        
+        if (listing.status !== 'pending' || listing.pendingApproval !== true) {
+          console.error('❌ CRITICAL: Listing created incorrectly!', listing);
+          // Force correction
+          const verifyDocRef = doc(db, 'listings', docRef.id);
+          await updateDoc(verifyDocRef, {
+            status: 'pending',
+            pendingApproval: true,
+            updatedAt: serverTimestamp(),
+          });
+          console.log('✅ Forced listing to correct pending state');
+          // Re-fetch after correction
+          const correctedListing = await listingsService.fetchListingById(docRef.id);
+          if (correctedListing) return correctedListing;
+        }
       }
       
       return listing;
@@ -735,24 +773,61 @@ export const listingsService = {
   fetchPendingApprovals: async (): Promise<Listing[]> => {
     try {
       const db = getDb();
-      const q = query(
-        collection(db, 'listings'),
-        where('pendingApproval', '==', true),
-        orderBy('updatedAt', 'desc')
-      );
       
-      const querySnapshot = await getDocs(q);
+      // Try composite index query first (pendingApproval + updatedAt)
+      let querySnapshot;
+      try {
+        const q = query(
+          collection(db, 'listings'),
+          where('pendingApproval', '==', true),
+          orderBy('updatedAt', 'desc')
+        );
+        querySnapshot = await getDocs(q);
+        console.log('✅ Used composite index query for pending approvals');
+      } catch (indexError: any) {
+        // If composite index doesn't exist, fall back to simple query
+        console.warn('⚠️ Composite index not found, using fallback query:', indexError.message);
+        const fallbackQuery = query(
+          collection(db, 'listings'),
+          where('pendingApproval', '==', true)
+        );
+        querySnapshot = await getDocs(fallbackQuery);
+        console.log('✅ Used fallback query (no orderBy) for pending approvals');
+      }
+      
       const listings: Listing[] = [];
       
       querySnapshot.forEach((doc) => {
         const listing = convertDocToListing(doc);
-        // Only include if not marked for deletion (deletion has separate queue)
-        if (!listing.pendingDelete) {
+        
+        // CRITICAL: Verify pendingApproval is actually true (handle type mismatches)
+        const data = doc.data();
+        const pendingApproval = data.pendingApproval === true || data.pendingApproval === 'true';
+        
+        // Only include if:
+        // 1. pendingApproval is true (boolean or string 'true')
+        // 2. Not marked for deletion (deletion has separate queue)
+        if (pendingApproval && !listing.pendingDelete) {
           listings.push(listing);
+        } else {
+          console.log('🚫 Excluded from pending approvals:', listing.id, {
+            pendingApproval: data.pendingApproval,
+            pendingApprovalType: typeof data.pendingApproval,
+            pendingDelete: listing.pendingDelete,
+          });
         }
       });
       
-      console.log(`✅ Fetched ${listings.length} pending approvals (excluded ${querySnapshot.size - listings.length} pending deletes)`);
+      // Sort manually if we used fallback query (no orderBy)
+      if (listings.length > 0 && listings[0].updatedAt) {
+        listings.sort((a, b) => {
+          const aTime = a.updatedAt?.getTime() || 0;
+          const bTime = b.updatedAt?.getTime() || 0;
+          return bTime - aTime; // Descending order
+        });
+      }
+      
+      console.log(`✅ Fetched ${listings.length} pending approvals (from ${querySnapshot.size} total matches)`);
       return listings;
     } catch (error: any) {
       console.error('❌ Fetch pending approvals error:', error);
