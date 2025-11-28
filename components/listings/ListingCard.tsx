@@ -121,12 +121,15 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
     } else {
       // Handle Firestore Timestamp or timestamp objects
       const timestamp = listing.createdAt as any;
-      if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      if (timestamp?.toDate && typeof timestamp.toDate === 'function') {
         // Firestore Timestamp
         createdAtDate = timestamp.toDate();
-      } else if (timestamp.seconds !== undefined) {
+      } else if (timestamp?.seconds !== undefined) {
         // Firestore timestamp object with seconds
         createdAtDate = new Date(timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000);
+      } else if (timestamp?._seconds !== undefined) {
+        // Alternative Firestore timestamp format
+        createdAtDate = new Date(timestamp._seconds * 1000 + (timestamp._nanoseconds || 0) / 1000000);
       }
     }
     
@@ -134,6 +137,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
     if (createdAtDate && isNaN(createdAtDate.getTime())) {
       createdAtDate = null;
     }
+  }
+  
+  // If createdAt is null but listing exists, use current time as fallback (for very new listings)
+  // This handles cases where Firestore hasn't committed the timestamp yet
+  if (!createdAtDate && listing.id) {
+    createdAtDate = new Date(); // Fallback to now for very new listings
   }
   
   const timeAgo = createdAtDate ? getTimeAgo(createdAtDate, t) : '';
@@ -327,11 +336,9 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
             </div>
 
             {/* Time Ago */}
-            {timeAgo && (
-              <div className="text-[10px] text-gray-500 mb-1.5">
-                {t('listings.added')}: {timeAgo}
-              </div>
-            )}
+            <div className="text-[10px] text-gray-500 mb-1.5">
+              {t('listings.added')}: {timeAgo || t('listings.justNow')}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-1.5 mt-auto pt-1.5">
@@ -485,11 +492,9 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
           </h3>
 
           {/* Time Ago */}
-          {timeAgo && (
-            <div className="text-xs text-gray-500 mb-2">
-              {t('listings.added')}: {timeAgo}
-            </div>
-          )}
+          <div className="text-xs text-gray-500 mb-2">
+            {t('listings.added')}: {timeAgo || t('listings.justNow')}
+          </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
