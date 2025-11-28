@@ -20,7 +20,7 @@ export default function NewProjectPage() {
   const { user, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'admin') {
+    if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
       router.push(`/${locale}/login`);
     }
   }, [user, isAuthenticated, router, locale]);
@@ -59,7 +59,7 @@ export default function NewProjectPage() {
   const [newProjectTypeMinDollar, setNewProjectTypeMinDollar] = useState('');
   const [newProjectTypeMaxDollar, setNewProjectTypeMaxDollar] = useState('');
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
     return null;
   }
 

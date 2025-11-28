@@ -22,7 +22,7 @@ export default function EditProjectPage() {
   const { user, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'admin') {
+    if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
       router.push(`/${locale}/login`);
     }
   }, [user, isAuthenticated, router, locale]);
@@ -66,7 +66,7 @@ export default function EditProjectPage() {
 
   useEffect(() => {
     const fetchProject = async () => {
-      if (!params.id || !isAuthenticated || user?.role !== 'admin') return;
+      if (!params.id || !isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) return;
 
       try {
         const id = params.id as string;
@@ -113,7 +113,7 @@ export default function EditProjectPage() {
     fetchProject();
   }, [params.id, isAuthenticated, user, router, locale]);
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'agent')) {
     return null;
   }
 

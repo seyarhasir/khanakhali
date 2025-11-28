@@ -29,7 +29,7 @@ export default function AdminPage() {
       return;
     }
 
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'admin' && user?.role !== 'agent') {
       router.push(`/${locale}`);
       return;
     }
