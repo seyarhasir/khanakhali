@@ -166,15 +166,13 @@ export const listingsService = {
         const listing = convertDocToListing(doc);
         // CRITICAL: Multiple layers of protection to exclude pending listings
         // Only include listings that are:
-        // 1. Status MUST be 'active' (not 'pending')
+        // 1. Status MUST be 'active' (query already filters this, but double-check)
         // 2. NOT pending approval (agent submissions)
         // 3. NOT pending deletion
-        // 4. Double-check status is not 'pending' (defensive check)
         if (
           listing.status === 'active' && 
           !listing.pendingApproval && 
-          !listing.pendingDelete &&
-          listing.status !== 'pending' // Extra defensive check
+          !listing.pendingDelete
         ) {
           listings.push(listing);
         } else {
