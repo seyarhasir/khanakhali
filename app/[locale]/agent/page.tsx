@@ -168,13 +168,23 @@ export default function AgentPage() {
                       
                       if (confirmed) {
                         try {
+                          console.log('🔍 Agent attempting to delete listing:', listing.id, 'Role:', user?.role);
                           await listingsService.deleteListing(listing.id, user?.role || 'user');
-                          // Remove from local state immediately
-                          setListings(listings.filter((l) => l.id !== listing.id));
+                          console.log('✅ DeleteListing function completed');
+                          // DON'T remove from local state immediately - wait for refresh
+                          // The listing should still exist with pendingDelete=true
                           toast.success('Delete request submitted! Waiting for admin approval.');
-                        } catch (error) {
-                          console.error('Error deleting listing:', error);
-                          toast.error('Failed to delete listing');
+                          // Refresh the listings to see updated state
+                          const refreshedListings = await listingsService.fetchAdminListings(user?.uid || '');
+                          setListings(refreshedListings);
+                        } catch (error: any) {
+                          console.error('❌ Error deleting listing:', error);
+                          console.error('Error details:', {
+                            code: error.code,
+                            message: error.message,
+                            stack: error.stack,
+                          });
+                          toast.error(`Failed to delete listing: ${error.message || 'Unknown error'}`);
                         }
                       }
                     }}

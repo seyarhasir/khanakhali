@@ -558,7 +558,11 @@ export const listingsService = {
         });
         
         try {
-          await updateDoc(docRef, updateData);
+          // CRITICAL: Remove undefined values before sending
+          const cleanedUpdateData = removeUndefined(updateData);
+          
+          console.log('🔍 Sending updateDoc with data:', cleanedUpdateData);
+          await updateDoc(docRef, cleanedUpdateData);
           console.log('✅ Listing delete pending approval:', id);
         } catch (updateError: any) {
           console.error('❌ CRITICAL: UpdateDoc failed!', updateError);
@@ -566,7 +570,15 @@ export const listingsService = {
             code: updateError.code,
             message: updateError.message,
             updateData,
+            originalListingStatus: originalListing.status,
+            originalPendingApproval: originalListing.pendingApproval,
           });
+          
+          // If it's a permission error, provide more helpful message
+          if (updateError.code === 'permission-denied') {
+            throw new Error('Permission denied. Please check Firestore rules are deployed correctly.');
+          }
+          
           throw new Error(`Failed to request deletion: ${updateError.message}`);
         }
         
