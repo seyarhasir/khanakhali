@@ -70,31 +70,31 @@ service cloud.firestore {
                        (!isAgent() && 
                         request.resource.data.status in ['active', 'sold', 'pending', 'rented', 'pledged']));
       
-      // CRITICAL: Admin and agent can update, but agents have strict restrictions
+      // CRITICAL: Admin and agent can update, but with different permissions
       allow update: if isAdminOrAgent() &&
-                      resource.data.createdBy == request.auth.uid &&
-                      // If admin, allow all updates
-                      (!isAgent() || 
-                       // If agent, check specific conditions:
-                       // CONDITION 1: Agent requesting deletion (pendingDelete=true)
-                       // This MUST be allowed - it's how agents request deletion
-                       (request.resource.data.pendingDelete == true && 
-                        request.resource.data.pendingApproval == true) ||
-                       // CONDITION 2: Agent updating normally (not requesting deletion)
-                       // Must preserve pending status and pendingApproval
-                       (request.resource.data.pendingDelete != true &&
-                        request.resource.data.pendingDelete != 'true' &&
-                        // Status must stay pending or unchanged (cannot activate)
-                        (request.resource.data.status == 'pending' || 
-                         request.resource.data.status == resource.data.status) &&
-                        // pendingApproval must be true (cannot remove it)
-                        (request.resource.data.pendingApproval == true || 
-                         request.resource.data.pendingApproval == 'true')));
+                      (
+                       // CASE 1: Admin can update ANY listing (for approval/rejection)
+                       isAdmin() ||
+                       // CASE 2: Agent can only update their own listings, with restrictions
+                       (isAgent() && resource.data.createdBy == request.auth.uid &&
+                        // CONDITION 1: Agent requesting deletion (pendingDelete=true)
+                        (request.resource.data.pendingDelete == true && 
+                         request.resource.data.pendingApproval == true) ||
+                        // CONDITION 2: Agent updating normally (not requesting deletion)
+                        (request.resource.data.pendingDelete != true &&
+                         request.resource.data.pendingDelete != 'true' &&
+                         // Status must stay pending or unchanged (cannot activate)
+                         (request.resource.data.status == 'pending' || 
+                          request.resource.data.status == resource.data.status) &&
+                         // pendingApproval must be true (cannot remove it)
+                         (request.resource.data.pendingApproval == true || 
+                          request.resource.data.pendingApproval == 'true')))
+                      );
       
       // CRITICAL: Only admins can actually delete. Agents must use update to set pendingDelete=true
       // This prevents agents from bypassing the approval system
-      allow delete: if isAdmin() &&
-                      resource.data.createdBy == request.auth.uid;
+      // Admin can delete ANY listing (for rejection purposes)
+      allow delete: if isAdmin();
     }
     
     // Projects collection
