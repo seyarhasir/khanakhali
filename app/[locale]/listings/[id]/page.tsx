@@ -847,53 +847,61 @@ export default function ListingDetailPage() {
 
             {/* Agent Profile Card */}
             {userProfile && (
-              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-brand-slate mb-4">{t('listings.agentProfile')}</h2>
-                <div className="flex items-start gap-4">
-                  {userProfile.profileImageUrl ? (
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden flex-shrink-0">
-                      <Image
-                        src={userProfile.profileImageUrl}
-                        alt={userProfile.displayName}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand-primary-soft flex items-center justify-center flex-shrink-0">
-                      <span className="text-2xl sm:text-3xl font-bold text-brand-primary">
-                        {userProfile.displayName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-bold text-brand-slate mb-1">{userProfile.displayName}</h3>
-                    {userProfile.company && (
-                      <p className="text-sm text-brand-gray mb-2">{userProfile.company}</p>
-                    )}
-                    {userProfile.bio && (
-                      <p className="text-sm text-brand-gray mb-3 leading-relaxed">{userProfile.bio}</p>
-                    )}
-                    {userProfile.experience && (
-                      <p className="text-sm text-brand-gray mb-2">
-                        <span className="font-medium">{t('listings.experience')}:</span> {userProfile.experience}
-                      </p>
-                    )}
-                    {userProfile.specialties && userProfile.specialties.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {userProfile.specialties.map((specialty, index) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1 bg-brand-primary-soft text-brand-primary rounded-lg text-xs font-medium"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
+              <Link href={`/${locale}/profile/${userProfile.uid}`}>
+                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 hover:shadow-2xl transition-all cursor-pointer group">
+                  <h2 className="text-xl sm:text-2xl font-bold text-brand-slate mb-4 group-hover:text-brand-primary transition-colors">{t('listings.agentProfile')}</h2>
+                  <div className="flex items-start gap-4">
+                    {userProfile.profileImageUrl ? (
+                      <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-transparent group-hover:ring-brand-primary transition-all">
+                        <Image
+                          src={userProfile.profileImageUrl}
+                          alt={userProfile.displayName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand-primary-soft flex items-center justify-center flex-shrink-0 ring-2 ring-transparent group-hover:ring-brand-primary transition-all">
+                        <span className="text-2xl sm:text-3xl font-bold text-brand-primary">
+                          {userProfile.displayName.charAt(0).toUpperCase()}
+                        </span>
                       </div>
                     )}
+                    <div className="flex-1">
+                      <h3 className="text-lg sm:text-xl font-bold text-brand-slate mb-1 group-hover:text-brand-primary transition-colors">{userProfile.displayName}</h3>
+                      {userProfile.company && (
+                        <p className="text-sm text-brand-gray mb-2">{userProfile.company}</p>
+                      )}
+                      {userProfile.bio && (
+                        <p className="text-sm text-brand-gray mb-3 leading-relaxed line-clamp-2">{userProfile.bio}</p>
+                      )}
+                      {userProfile.experience && (
+                        <p className="text-sm text-brand-gray mb-2">
+                          <span className="font-medium">{t('listings.experience')}:</span> {userProfile.experience}
+                        </p>
+                      )}
+                      {userProfile.specialties && userProfile.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {userProfile.specialties.slice(0, 3).map((specialty, index) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-brand-primary-soft text-brand-primary rounded-lg text-xs font-medium"
+                            >
+                              {specialty}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="mt-4 text-sm text-brand-primary font-semibold flex items-center gap-2 group-hover:underline">
+                        View Profile & All Listings
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             )}
           </div>
         </div>
