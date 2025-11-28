@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { getDbInstance } from '../firebase/config';
 import { getAuthInstance } from '../firebase/config';
 import { User } from '../types/user.types';
@@ -138,6 +138,84 @@ export const userService = {
         throw new Error('User document not found. Please contact support.');
       } else {
         throw new Error(error?.message || 'Failed to update user profile');
+      }
+    }
+  },
+
+  // Fetch all users (admin only)
+  fetchAllUsers: async (): Promise<User[]> => {
+    try {
+      const db = getDb();
+      const usersRef = collection(db, 'users');
+      
+      // Try to order by createdAt, fallback to simple query if index doesn't exist
+      let querySnapshot;
+      try {
+        const q = query(usersRef, orderBy('createdAt', 'desc'));
+        querySnapshot = await getDocs(q);
+      } catch (indexError: any) {
+        // Fallback if index doesn't exist
+        querySnapshot = await getDocs(usersRef);
+      }
+      
+      const users: User[] = [];
+      querySnapshot.forEach((doc) => {
+        users.push(convertDocToUser(doc));
+      });
+      
+      // Sort manually if we used fallback query
+      if (users.length > 0 && users[0].createdAt) {
+        users.sort((a, b) => {
+          const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+          const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+          return bTime - aTime; // Descending order
+        });
+      }
+      
+      console.log(`✅ Fetched ${users.length} users`);
+      return users;
+    } catch (error: any) {
+      console.error('❌ Fetch all users error:', error);
+      throw new Error(error.message || 'Failed to fetch users');
+    }
+  },
+
+  // Update user role (admin only)
+  updateUserRole: async (userId: string, role: 'user' | 'agent' | 'admin'): Promise<void> => {
+    try {
+      const db = getDb();
+      const userRef = doc(db, 'users', userId);
+      
+      // Verify user exists
+      const userDoc = await getDoc(userRef);
+      if (!userDoc.exists()) {
+        throw new Error('User not found');
+      }
+      
+      // Validate role
+      if (!['user', 'agent', 'admin'].includes(role)) {
+        throw new Error('Invalid role');
+      }
+      
+      await updateDoc(userRef, {
+        role,
+        updatedAt: serverTimestamp(),
+      });
+      
+      console.log(`✅ User role updated: ${userId} -> ${role}`);
+    } catch (error: any) {
+      console.error('❌ Update user role error:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        userId,
+        role,
+      });
+      
+      if (error?.code === 'permission-denied') {
+        throw new Error('Permission denied. Only admins can update user roles.');
+      } else {
+        throw new Error(error?.message || 'Failed to update user role');
       }
     }
   },
