@@ -199,6 +199,51 @@ export default function AdminPage() {
             ))}
           </div>
         )
+      ) : activeTab === 'agent-listings' ? (
+        agentListings.length === 0 ? (
+          <div className="bg-white rounded-2xl p-12 text-center">
+            <p className="text-brand-gray text-lg mb-4">{t('admin.noAgentListings')}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {agentListings.map((listing) => (
+              <div key={listing.id} className="relative">
+                <ListingCard listing={listing} />
+                <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                  <Link href={`/${locale}/admin/listings/${listing.id}/edit`} className="flex-1">
+                    <Button variant="outline" fullWidth className="text-sm sm:text-base py-2 sm:py-3">{t('common.edit')}</Button>
+                  </Link>
+                  <Button
+                    variant="danger"
+                    fullWidth
+                    className="text-sm sm:text-base py-2 sm:py-3"
+                    onClick={async () => {
+                      const confirmed = await confirm({
+                        title: t('admin.deleteListing'),
+                        message: t('admin.deleteListingConfirm'),
+                        confirmText: t('common.delete'),
+                        type: 'danger',
+                      });
+                      
+                      if (confirmed) {
+                        try {
+                          await listingsService.deleteListing(listing.id, user?.role || 'user');
+                          setAgentListings(agentListings.filter((l) => l.id !== listing.id));
+                          toast.success('Listing deleted successfully');
+                        } catch (error) {
+                          console.error('Error deleting listing:', error);
+                          toast.error('Failed to delete listing');
+                        }
+                      }
+                    }}
+                  >
+                    {t('common.delete')}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       ) : (
         projects.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center">
