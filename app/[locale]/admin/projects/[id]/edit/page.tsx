@@ -73,6 +73,7 @@ export default function EditProjectPage() {
   const [newProjectType, setNewProjectType] = useState<'apartment' | 'penthouse' | 'office' | 'commercial' | 'plot' | 'villa'>('apartment');
   const [newProjectTypeBedrooms, setNewProjectTypeBedrooms] = useState('');
   const [newProjectTypeBathrooms, setNewProjectTypeBathrooms] = useState('');
+  const [newProjectTypeArea, setNewProjectTypeArea] = useState('');
   const [newProjectTypeMinPrice, setNewProjectTypeMinPrice] = useState('');
   const [newProjectTypeMaxPrice, setNewProjectTypeMaxPrice] = useState('');
   const [newProjectTypeMinDollar, setNewProjectTypeMinDollar] = useState('');
@@ -172,13 +173,16 @@ export default function EditProjectPage() {
       } : undefined,
     };
 
-    // Add bedrooms/bathrooms for apartments, penthouses, and villas
+    // Add bedrooms/bathrooms/area for apartments, penthouses, and villas
     if (newProjectType === 'apartment' || newProjectType === 'penthouse' || newProjectType === 'villa') {
       if (newProjectTypeBedrooms) {
         projectType.bedrooms = parseInt(newProjectTypeBedrooms);
       }
       if (newProjectTypeBathrooms) {
         projectType.bathrooms = parseInt(newProjectTypeBathrooms);
+      }
+      if (newProjectTypeArea) {
+        projectType.area = parseFloat(newProjectTypeArea);
       }
     }
 
@@ -190,6 +194,7 @@ export default function EditProjectPage() {
     setNewProjectType('apartment');
     setNewProjectTypeBedrooms('');
     setNewProjectTypeBathrooms('');
+    setNewProjectTypeArea('');
     setNewProjectTypeMinPrice('');
     setNewProjectTypeMaxPrice('');
     setNewProjectTypeMinDollar('');
@@ -496,9 +501,9 @@ export default function EditProjectPage() {
                 </div>
               </div>
               
-              {/* Bedrooms/Bathrooms for apartments, penthouses, villas */}
+              {/* Bedrooms/Bathrooms/Area for apartments, penthouses, villas */}
               {(newProjectType === 'apartment' || newProjectType === 'penthouse' || newProjectType === 'villa') && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.bedrooms')}</label>
                     <Input
@@ -517,6 +522,17 @@ export default function EditProjectPage() {
                       value={newProjectTypeBathrooms}
                       onChange={(e) => setNewProjectTypeBathrooms(e.target.value)}
                       placeholder={t('admin.bathrooms')}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-slate mb-2">{t('admin.area')} (m²)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={newProjectTypeArea}
+                      onChange={(e) => setNewProjectTypeArea(e.target.value)}
+                      placeholder={t('admin.area')}
                     />
                   </div>
                 </div>
@@ -587,6 +603,11 @@ export default function EditProjectPage() {
                         {(pt as any).bathrooms && (
                           <span className="ml-2 text-sm text-gray-600">
                             {t('admin.bathrooms')}: {(pt as any).bathrooms}
+                          </span>
+                        )}
+                        {(pt as any).area && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            {t('admin.area')}: {(pt as any).area} m²
                           </span>
                         )}
                         {pt.priceRange && (

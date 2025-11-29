@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import { projectsService } from '@/lib/services/projects.service';
 import { Project } from '@/lib/types/project.types';
-import { MapPin, Phone, Mail, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Phone, Mail, Share2, ChevronLeft, ChevronRight, Bed, Bath, Home, Building2, Ruler, Building, Store, Landmark, Warehouse } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useToast } from '@/components/ui/Toast';
 
@@ -204,23 +204,80 @@ export default function ProjectDetailPage() {
             {/* Project Types */}
             {project.projectTypes && project.projectTypes.length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-brand-slate mb-4">{t('projects.availableTypes')}</h2>
+                <h2 className="text-2xl font-bold text-brand-slate mb-4 flex items-center gap-2">
+                  <Building2 className="w-6 h-6 text-brand-primary" />
+                  {t('projects.availableTypes')}
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {project.projectTypes.map((pt, index) => (
-                    <div key={index} className="p-4 bg-white rounded-lg border border-gray-200">
-                      <h3 className="font-semibold text-lg capitalize mb-2">{pt.type}</h3>
-                      {pt.priceRange && pt.priceRange.min !== undefined && pt.priceRange.max !== undefined && (
-                        <p className="text-brand-primary font-semibold">
-                          {pt.priceRange.min.toLocaleString()} - {pt.priceRange.max.toLocaleString()} {t('common.currency')}
-                        </p>
-                      )}
-                      {pt.priceInDollarRange && pt.priceInDollarRange.min !== undefined && pt.priceInDollarRange.max !== undefined && (
-                        <p className="text-sm text-gray-600 mt-1">
-                          ${pt.priceInDollarRange.min.toLocaleString()} - ${pt.priceInDollarRange.max.toLocaleString()} USD
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                  {project.projectTypes.map((pt, index) => {
+                    const showBedBathArea = (pt.type === 'apartment' || pt.type === 'penthouse' || pt.type === 'villa') && 
+                                            (pt.bedrooms !== undefined || pt.bathrooms !== undefined || pt.area !== undefined);
+                    
+                    // Get icon for each property type
+                    const getPropertyTypeIcon = () => {
+                      switch (pt.type) {
+                        case 'apartment':
+                          return Building;
+                        case 'penthouse':
+                          return Landmark;
+                        case 'villa':
+                          return Home;
+                        case 'office':
+                          return Building2;
+                        case 'commercial':
+                          return Store;
+                        case 'plot':
+                          return Warehouse;
+                        default:
+                          return Home;
+                      }
+                    };
+                    
+                    const PropertyIcon = getPropertyTypeIcon();
+                    
+                    return (
+                      <div key={index} className="p-5 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-2 mb-3">
+                          <PropertyIcon className="w-5 h-5 text-brand-primary" />
+                          <h3 className="font-semibold text-lg">
+                            {t(`projects.projectTypes.${pt.type}`) || pt.type}
+                          </h3>
+                        </div>
+                        {showBedBathArea && (
+                          <div className="flex items-center gap-4 mb-3 pb-3 border-b border-gray-100">
+                            {pt.bedrooms !== undefined && (
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <Bed className="w-4 h-4 text-brand-primary" />
+                                <span className="text-sm font-medium">{pt.bedrooms} {t('projects.bedrooms')}</span>
+                              </div>
+                            )}
+                            {pt.bathrooms !== undefined && (
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <Bath className="w-4 h-4 text-brand-primary" />
+                                <span className="text-sm font-medium">{pt.bathrooms} {t('projects.bathrooms')}</span>
+                              </div>
+                            )}
+                            {pt.area !== undefined && (
+                              <div className="flex items-center gap-2 text-gray-700">
+                                <Ruler className="w-4 h-4 text-brand-primary" />
+                                <span className="text-sm font-medium">{pt.area} m²</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {pt.priceRange && pt.priceRange.min !== undefined && pt.priceRange.max !== undefined && (
+                          <p className="text-brand-primary font-semibold text-lg">
+                            {pt.priceRange.min.toLocaleString()} - {pt.priceRange.max.toLocaleString()} {t('common.currency')}
+                          </p>
+                        )}
+                        {pt.priceInDollarRange && pt.priceInDollarRange.min !== undefined && pt.priceInDollarRange.max !== undefined && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            ${pt.priceInDollarRange.min.toLocaleString()} - ${pt.priceInDollarRange.max.toLocaleString()} USD
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -232,10 +289,14 @@ export default function ProjectDetailPage() {
                 <div className="space-y-6">
                   {Object.entries(project.features).map(([key, value]) => {
                     if (!value || value.length === 0) return null;
+                    // Map feature keys to translation keys
+                    const translationKey = `projects.featureSections.${key}`;
+                    const translatedLabel = t(translationKey);
+                    const displayLabel = translatedLabel !== translationKey ? translatedLabel : key.replace(/([A-Z])/g, ' $1').trim();
                     return (
                       <div key={key}>
-                        <h3 className="font-semibold text-lg mb-2 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        <h3 className="font-semibold text-lg mb-2">
+                          {displayLabel}
                         </h3>
                         <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {value.map((feature, index) => (

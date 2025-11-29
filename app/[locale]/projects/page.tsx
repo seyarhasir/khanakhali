@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { projectsService } from '@/lib/services/projects.service';
 import { Project } from '@/lib/types/project.types';
 import { ProjectCard } from '@/components/projects/ProjectCard';
+import { Building2, Sparkles } from 'lucide-react';
 
 export default function ProjectsPage() {
   const t = useTranslations();
@@ -35,11 +36,17 @@ export default function ProjectsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 bg-brand-primary-soft rounded-full">
+              <Building2 className="w-8 h-8 text-brand-primary" />
+            </div>
+            <Sparkles className="w-6 h-6 text-brand-primary hidden sm:block" />
+          </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-slate mb-4">
-            Property Projects
+            {t('projects.pageTitle')}
           </h1>
           <p className="text-lg md:text-xl text-brand-gray max-w-2xl mx-auto">
-            Explore our featured property development projects
+            {t('projects.pageSubtitle')}
           </p>
         </div>
 
@@ -65,8 +72,8 @@ export default function ProjectsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold text-brand-slate mb-3">No Projects Available</h3>
-            <p className="text-brand-gray text-lg">Check back soon for new projects!</p>
+            <h3 className="text-2xl font-bold text-brand-slate mb-3">{t('projects.noProjectsAvailable')}</h3>
+            <p className="text-brand-gray text-lg">{t('projects.checkBackSoon')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

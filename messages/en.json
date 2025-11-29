@@ -18,7 +18,8 @@
     "search": "Search",
     "filter": "Filter",
     "close": "Close",
-    "currency": "AFN"
+    "currency": "AFN",
+    "more": "more"
   },
   "nav": {
     "adminLogin": "Admin Login",
@@ -176,7 +177,31 @@
     "developedBy": "Developed by:",
     "marketedBy": "Marketed by:",
     "priceRange": "Price Range",
-    "linkCopied": "Link copied to clipboard!"
+    "linkCopied": "Link copied to clipboard!",
+    "pageTitle": "Property Projects",
+    "pageSubtitle": "Explore our featured property development projects",
+    "noProjectsAvailable": "No Projects Available",
+    "checkBackSoon": "Check back soon for new projects!",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "bed": "bed",
+    "bath": "bath",
+    "projectTypes": {
+      "apartment": "Apartment",
+      "penthouse": "Penthouse",
+      "villa": "Villa",
+      "office": "Office",
+      "commercial": "Commercial",
+      "plot": "Plot"
+    },
+    "featureSections": {
+      "mainFeatures": "Main Features",
+      "businessAndCommunication": "Business & Communication",
+      "healthcareAndRecreation": "Healthcare & Recreation",
+      "communityFeatures": "Community Features",
+      "nearbyFacilities": "Nearby Facilities",
+      "otherFacilities": "Other Facilities"
+    }
   },
   "admin": {
     "createListing": "Create New Listing",
@@ -254,6 +279,7 @@
     "photosDescription": "Upload high-quality photos of your property. At least one photo is required.",
     "existingPhotos": "Existing Photos",
     "addPhoto": "Add Photo",
+    "addMorePhotos": "Add More Photos",
     "addAtLeastOne": "Add at least one photo to showcase your property",
     "status": "Status",
     "statusDescription": "Current status of this listing",
@@ -362,6 +388,8 @@
     "projectTypesRequired": "At least one project type is required",
     "projectCreated": "Project created successfully!",
     "projectCreateFailed": "Failed to create project",
+    "projectUpdated": "Project updated successfully!",
+    "projectUpdateFailed": "Failed to update project",
     "detailedFeatures": {
       "mainFeatures": "Main Features",
       "builtInYear": "Built in Year",

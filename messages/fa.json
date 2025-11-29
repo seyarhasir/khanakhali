@@ -18,7 +18,8 @@
     "search": "جستجو",
     "filter": "فیلتر",
     "close": "بستن",
-    "currency": "افغانی"
+    "currency": "افغانی",
+    "more": "بیشتر"
   },
   "nav": {
     "adminLogin": "ورود مدیر",
@@ -176,7 +177,31 @@
     "developedBy": "توسعه یافته توسط:",
     "marketedBy": "بازاریابی شده توسط:",
     "priceRange": "محدوده قیمت",
-    "linkCopied": "لینک در کلیپ‌بورد کپی شد!"
+    "linkCopied": "لینک در کلیپ‌بورد کپی شد!",
+    "pageTitle": "پروژه‌های املاک",
+    "pageSubtitle": "کشف پروژه‌های توسعه املاک ویژه ما",
+    "noProjectsAvailable": "هیچ پروژه‌ای در دسترس نیست",
+    "checkBackSoon": "به زودی برای پروژه‌های جدید برگردید!",
+    "bedrooms": "اتاق خواب",
+    "bathrooms": "حمام",
+    "bed": "خواب",
+    "bath": "حمام",
+    "projectTypes": {
+      "apartment": "آپارتمان",
+      "penthouse": "پنت‌هاوس",
+      "villa": "ویلا",
+      "office": "دفتر",
+      "commercial": "تجاری",
+      "plot": "زمین"
+    },
+    "featureSections": {
+      "mainFeatures": "ویژگی‌های اصلی",
+      "businessAndCommunication": "تجارت و ارتباطات",
+      "healthcareAndRecreation": "بهداشت و تفریح",
+      "communityFeatures": "ویژگی‌های محله",
+      "nearbyFacilities": "امکانات نزدیک",
+      "otherFacilities": "امکانات دیگر"
+    }
   },
   "admin": {
     "createListing": "ایجاد لیست جدید",
@@ -254,6 +279,7 @@
     "photosDescription": "عکس‌های با کیفیت از ملک خود آپلود کنید. حداقل یک عکس الزامی است.",
     "existingPhotos": "عکس‌های موجود",
     "addPhoto": "افزودن عکس",
+    "addMorePhotos": "افزودن عکس‌های بیشتر",
     "addAtLeastOne": "حداقل یک عکس برای نمایش ملک خود اضافه کنید",
     "status": "وضعیت",
     "statusDescription": "وضعیت فعلی این لیست",
@@ -430,6 +456,8 @@
     "projectTypesRequired": "حداقل یک نوع پروژه الزامی است",
     "projectCreated": "پروژه با موفقیت ایجاد شد!",
     "projectCreateFailed": "ایجاد پروژه ناموفق بود",
+    "projectUpdated": "پروژه با موفقیت به‌روزرسانی شد!",
+    "projectUpdateFailed": "به‌روزرسانی پروژه ناموفق بود",
     "projectUpdated": "پروژه با موفقیت به‌روزرسانی شد!",
     "projectUpdateFailed": "به‌روزرسانی پروژه ناموفق بود",
     "existingPhotos": "عکس‌های موجود",

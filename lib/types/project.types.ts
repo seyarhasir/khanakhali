@@ -14,6 +14,7 @@ export interface Project {
     type: 'apartment' | 'penthouse' | 'office' | 'commercial' | 'plot' | 'villa';
     bedrooms?: number; // For apartments/penthouses/villas
     bathrooms?: number; // For apartments/penthouses/villas
+    area?: number; // For apartments/penthouses/villas (in m²)
     priceRange?: {
       min: number;
       max: number;
@@ -87,6 +88,7 @@ export interface CreateProjectInput {
     type: 'apartment' | 'penthouse' | 'office' | 'commercial' | 'plot' | 'villa';
     bedrooms?: number; // For apartments/penthouses/villas
     bathrooms?: number; // For apartments/penthouses/villas
+    area?: number; // For apartments/penthouses/villas (in m²)
     priceRange?: {
       min: number;
       max: number;
