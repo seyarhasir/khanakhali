@@ -89,19 +89,20 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   return (
     <div className="w-full rounded-xl border-2 border-gray-200 overflow-hidden">
-      <div className="relative w-full h-[400px] sm:h-[500px]">
+      <div className="relative w-full h-[400px] sm:h-[500px] z-0">
         <MapContainer
           center={position}
           zoom={13}
-          style={{ height: '100%', width: '100%', zIndex: 0 }}
+          style={{ height: '100%', width: '100%' }}
           className="z-0"
           key={`${position[0]}-${position[1]}`}
+          scrollWheelZoom={true}
         >
           <TileLayer
-            attribution='Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}{r}.png"
-            subdomains="abcd"
-            maxZoom={20}
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            subdomains={['a', 'b', 'c']}
+            maxZoom={19}
             minZoom={1}
           />
           <Marker
